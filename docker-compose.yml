@@ -1,4 +1,19 @@
 services:
+  redis:
+    hostname: redis
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+      
+  redis-insight:
+    image: redis/redisinsight:latest
+    restart: always
+    ports:
+      - "5540:5540"
+    volumes:
+      - redis-insight:/data
+  
   geoserver:
     container_name: geoserver
     hostname: geoserver
@@ -12,19 +27,8 @@ services:
       retries: 50
       start_period: 30s
     volumes:
-      - ./data/geoserver:/opt/geoserver_data
-      - ./data/uploader/RASTER:/mnt/skyforest/2024/ # these two paths must be equal on the container side
+      - ./geoserver:/opt/geoserver_data
+      - ./files:/files 
 
-  uploader:
-    container_name: uploader
-    build: .
-    environment:
-      - GEOSERVER_URL=http://geoserver:8080/geoserver
-      - GEOSERVER_USERNAME=admin
-      - GEOSERVER_PASSWORD=geoserver
-    depends_on:
-      geoserver:
-        condition: service_healthy
-    volumes:
-      - ./data/uploader/RASTER:/mnt/skyforest/2024/ # these two paths must be equal/ # these two paths must be equal on the container side
-      # - ./scripts:/scripts # uncomment this line to run the scripts locally
+volumes:
+  redis-insight:

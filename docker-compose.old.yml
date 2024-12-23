@@ -1,0 +1,30 @@
+services:
+  geoserver:
+    container_name: geoserver
+    hostname: geoserver
+    image: docker.osgeo.org/geoserver:2.26.x
+    ports:
+      - 8080:8080
+    healthcheck:
+      test: ["CMD", "curl", "localhost:8080/geoserver/rest/workspaces"]
+      interval: 10s
+      timeout: 10s
+      retries: 50
+      start_period: 30s
+    volumes:
+      - ./data/geoserver:/opt/geoserver_data
+      - ./data/uploader/RASTER:/mnt/skyforest/2024/ # these two paths must be equal on the container side
+
+  uploader:
+    container_name: uploader
+    build: .
+    environment:
+      - GEOSERVER_URL=http://geoserver:8080/geoserver
+      - GEOSERVER_USERNAME=admin
+      - GEOSERVER_PASSWORD=geoserver
+    depends_on:
+      geoserver:
+        condition: service_healthy
+    volumes:
+      - ./data/uploader/RASTER:/mnt/skyforest/2024/ # these two paths must be equal/ # these two paths must be equal on the container side
+      # - ./scripts:/scripts # uncomment this line to run the scripts locally
