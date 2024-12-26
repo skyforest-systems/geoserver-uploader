@@ -73,7 +73,14 @@ export async function queueController() {
       await createLayer(workspaceName, storeName, layerName);
 
       const layers = await getLayersFromWorkspace(workspaceName);
-      await createLayerGroup(workspaceName, layerGroupName, layers);
+
+      if (layers.length === 0) {
+        console.log(
+          `[dir-removed-controller] no layers found in workspace ${workspaceName}, no layer group was created`
+        );
+      } else {
+        await createLayerGroup(workspaceName, layerGroupName, layers);
+      }
 
       await changeDatasetStatus(processingDataset.dir, "processed");
     } catch (error) {

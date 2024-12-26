@@ -1,7 +1,16 @@
 import { DatasetStructure } from "../interfaces";
 
-export function checkStructure(path: string): DatasetStructure | null {
-  const folderStructure = path.split("/");
+export function checkStructure(
+  path: string,
+  fullPath?: boolean
+): DatasetStructure | null {
+  let folderStructure: Array<string>;
+
+  if (fullPath) {
+    folderStructure = path.split("/").reverse().slice(0, 5).reverse();
+  } else {
+    folderStructure = path.split("/");
+  }
 
   try {
     const customer = folderStructure[1];

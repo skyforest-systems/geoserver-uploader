@@ -15,8 +15,14 @@ export function hashDirectory(
   directoryOrFilePath: string,
   extensions: string[]
 ): string | null {
-  const stats = fs.lstatSync(directoryOrFilePath);
+  const stats = fs.lstatSync(directoryOrFilePath, {
+    throwIfNoEntry: false,
+  });
   const allFiles: string[] = [];
+
+  if (!stats) {
+    return null;
+  }
 
   /**
    * Recursively walks through a directory, collecting
