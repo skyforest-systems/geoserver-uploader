@@ -11,6 +11,8 @@ export async function createStore(
   storeName: string,
   filePath: string
 ) {
+  workspaceName = workspaceName.toLowerCase().replace(/ /g, "_");
+  storeName = storeName.toLowerCase().replace(/ /g, "_");
   try {
     // Check if the store exists
     const storeUrl = `/rest/workspaces/${workspaceName}/coveragestores/${storeName}`;

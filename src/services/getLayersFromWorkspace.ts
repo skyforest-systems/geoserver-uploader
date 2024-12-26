@@ -6,6 +6,7 @@ export async function getLayersFromWorkspace(workspaceName: string): Promise<
     href: string;
   }[]
 > {
+  workspaceName = workspaceName.toLowerCase().replace(/ /g, "_");
   try {
     const response = await geoserver.get(
       `/rest/workspaces/${workspaceName}/layers`

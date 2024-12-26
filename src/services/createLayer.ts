@@ -11,6 +11,9 @@ export async function createLayer(
   storeName: string,
   layerName: string
 ) {
+  workspaceName = workspaceName.toLowerCase().replace(/ /g, "_");
+  storeName = storeName.toLowerCase().replace(/ /g, "_");
+  layerName = layerName.toLowerCase().replace(/ /g, "_");
   try {
     const response = await geoserver.post(
       `/rest/workspaces/${workspaceName}/coveragestores/${storeName}/coverages`,

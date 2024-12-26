@@ -11,6 +11,12 @@ export async function createLayerGroup(
   workspaceName: string,
   layers: { name: string; href: string }[]
 ) {
+
+  workspaceName = workspaceName.toLowerCase().replace(/ /g, "_");
+  groupName = groupName.toLowerCase().replace(/ /g, "_");
+  layers = layers.map((layer) => {
+    return { ...layer, name: layer.name.toLowerCase().replace(/ /g, "_") };
+  });
   try {
     const groupUrl = `/rest/workspaces/${workspaceName}/layergroups/${groupName}`;
 

@@ -9,6 +9,8 @@ export async function removeLayerGroup(
   groupName: string,
   workspaceName: string
 ) {
+  workspaceName = workspaceName.toLowerCase().replace(/ /g, "_");
+  groupName = groupName.toLowerCase().replace(/ /g, "_");
   try {
     const groupUrl = `/rest/workspaces/${workspaceName}/layergroups/${groupName}`;
 

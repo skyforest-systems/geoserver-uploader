@@ -5,6 +5,7 @@ import geoserver from "../repositories/geoserver";
  * @param {string} workspaceName - The name of the workspace.
  */
 export async function createWorkspace(workspaceName: string) {
+  workspaceName = workspaceName.toLowerCase().replace(/ /g, "_");
   try {
     // Check if the workspace exists
     const existsResponse = await geoserver.get(
