@@ -6,6 +6,7 @@ import dirRemovedController from "./controllers/dirRemovedController";
 import { hashDirectory } from "./utils/hashDirectory";
 import environments from "./environments";
 import { getInitialState, saveInitialState } from "./repositories/db";
+import { geoserverController } from "./controllers/geoserverController";
 
 const app: Express = express();
 const port = process.env.PORT || 2000;
@@ -62,6 +63,15 @@ app.listen(port, async () => {
   setInterval(() => {
     try {
       queueController();
+    } catch (error) {
+      console.error("Error in queueController:", error);
+    }
+  }, 5000);
+
+  // Run geoserverController every 5 seconds
+  setInterval(() => {
+    try {
+      geoserverController();
     } catch (error) {
       console.error("Error in queueController:", error);
     }

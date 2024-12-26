@@ -1,8 +1,10 @@
 import { removeDatasetFromList } from "../repositories/db";
 import { createLayerGroup } from "../services/createLayerGroup";
 import { getLayersFromWorkspace } from "../services/getLayersFromWorkspace";
+import { getWorkspaces } from "../services/getWorkspaces";
 import { removeLayer } from "../services/removeLayer";
 import { removeLayerGroup } from "../services/removeLayerGroup";
+import { removeWorkspace } from "../services/removeWorkspace";
 import { checkStructure } from "../utils/checkStructure";
 
 export default async function dirRemovedController(path: string) {
@@ -28,7 +30,7 @@ export default async function dirRemovedController(path: string) {
     console.log(
       `[dir-removed-controller] removing ${workspaceName}:${layerName} from geoserver`
     );
-    await removeLayerGroup(workspaceName, layerGroupName);
+    await removeLayerGroup(workspaceName, layerGroupName); // if this fails, this function won't block the execution of the code, since the layer was already deleted and must be recreated
 
     await removeLayer(workspaceName, layerName); // if this fails, this function won't block the execution of the code, since the layer group was already deleted and must be recreated
 
@@ -39,12 +41,14 @@ export default async function dirRemovedController(path: string) {
 
     if (layers.length === 0) {
       console.log(
-        `[dir-removed-controller] no layers found in workspace ${workspaceName}, no layer group was created`
+        `[dir-removed-controller] no layers found in workspace ${workspaceName}, no layer group was created and workspace will be created`
       );
+      console.log();
+      await removeWorkspace(workspaceName);
     } else {
       await createLayerGroup(workspaceName, layerGroupName, layers);
     }
-    removeDatasetFromList(structure.dir);
+    await removeDatasetFromList(structure.dir);
   } catch (error) {
     console.error();
   }
