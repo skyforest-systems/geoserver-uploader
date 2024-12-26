@@ -1,8 +1,6 @@
-import {
-  addDatasetToProcessingQueue,
-  checkIfDatasetIsNew,
-  removeDatasetFromList,
-} from "../repositories/db";
+import environments from "../environments";
+import { removeDatasetFromList } from "../repositories/db";
+import { enqueueDataset } from "../services/modificationQueue";
 import { checkStructure } from "../utils/checkStructure";
 import { hashDirectory } from "../utils/hashDirectory";
 
@@ -10,9 +8,6 @@ export async function fileChangeController(path: string, event: string) {
   try {
     const fileName = path.split("/").pop();
     const fileExtension = "." + fileName?.split(".").pop();
-    const rasterExtensions = [".jpg", ".jpeg"];
-    const pointsExtensions = [".geojson", ".shp", ".kml", ".kmz"];
-    const analysisExtensions = [".tif", ".geotiff", ".tiff"];
     const structure = checkStructure(path);
 
     if (!structure) {
@@ -22,52 +17,30 @@ export async function fileChangeController(path: string, event: string) {
       return;
     }
 
-    if (
-      structure.type === "raster" &&
-      rasterExtensions.includes(fileExtension!)
-    ) {
-      const rasterHash = hashDirectory(structure.dir, rasterExtensions);
+    let extensions;
+    if (structure.type === "raster") extensions = environments.rasterExtensions;
+    else if (structure.type === "points")
+      extensions = environments.pointsExtensions;
+    else if (structure.type === "analysis")
+      extensions = environments.analysisExtensions;
 
-      if (!rasterHash) {
+    if (extensions?.includes(fileExtension!)) {
+      const datasetHash = hashDirectory(structure.dir, extensions);
+
+      if (!datasetHash) {
         console.log(
           `[file-controller] no files found in ${
             structure.dir
-          } with the extensions: ${rasterExtensions.join(
-            `, `
-          )}. Removing from list.`
+          } with the extensions: ${extensions.join(", ")}. Removing from list.`
         );
-        removeDatasetFromList(structure.dir);
+        await removeDatasetFromList(structure.dir);
         return;
       }
 
-      const isThisANewDataset = await checkIfDatasetIsNew(
-        structure.dir,
-        rasterHash
-      );
-
-      if (!isThisANewDataset) {
-        console.log(
-          `[file-controller] file ${fileName} of ${structure.dataset} already exists in the database`
-        );
-        return;
-      }
-
-      await addDatasetToProcessingQueue(structure, rasterHash);
+      enqueueDataset(structure, datasetHash);
       console.log(
-        `[file-controller] file ${fileName} of ${structure.dataset} added to the queue`
+        `[file-controller] file ${fileName} of ${structure.dataset} enqueued for modification analysis`
       );
-    } else if (
-      structure.type === "points" &&
-      pointsExtensions.includes(fileExtension!)
-    ) {
-      const pointsHash = hashDirectory(structure.dir, pointsExtensions);
-      console.log("Points dataset added in: ", structure.dir, pointsHash);
-    } else if (
-      structure.type === "analysis" &&
-      analysisExtensions.includes(fileExtension!)
-    ) {
-      const analysisHash = hashDirectory(structure.dir, analysisExtensions);
-      console.log("Analysis dataset added in: ", structure.dir, analysisHash);
     }
   } catch (error) {
     console.error(error);

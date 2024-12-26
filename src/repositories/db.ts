@@ -1,5 +1,5 @@
 import { createClient } from "redis";
-import { DatasetStructure } from "../interfaces";
+import { DatasetQueueItem, DatasetStructure } from "../interfaces";
 
 // Create a single Redis client instance and reuse it
 const redisClient = createClient();
@@ -38,33 +38,23 @@ const checkIfDatasetIsNew = async (key: string, hash: string) => {
   }
 };
 
-const addDatasetToProcessingQueue = async (
-  structure: DatasetStructure,
-  hash: string
-) => {
-  try {
-    await ensureRedisClient();
-
-    await redisClient.hSet(structure.dir, {
-      hash,
-      structure: JSON.stringify(structure),
-      status: "added",
-      lastUpdated: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error(`[addDatasetToProcessingQueue] Error: ${error}`);
-    throw error;
-  }
-};
-
 const checkForReadyToQueueDatasets = async () => {
   try {
     await ensureRedisClient();
 
     const keys = await redisClient.keys("*");
 
-    const datasets: { [key: string]: any }[] = await Promise.all(
+    const hashKeys = await Promise.all(
       keys.map(async (key) => {
+        const type = await redisClient.type(key);
+        return type === "hash" ? key : null;
+      })
+    );
+
+    const filteredKeys = hashKeys.filter((key) => key !== null);
+
+    const datasets: { [key: string]: any }[] = await Promise.all(
+      filteredKeys.map(async (key) => {
         const dataset = await redisClient.hGetAll(key);
         return { key, ...dataset };
       })
@@ -84,7 +74,6 @@ const checkForReadyToQueueDatasets = async () => {
       }));
   } catch (error) {
     console.error(`[checkForReadyToQueueDatasets] Error: ${error}`);
-    throw error;
   }
 };
 
@@ -94,8 +83,17 @@ const checkForQueuedDatasets = async () => {
 
     const keys = await redisClient.keys("*");
 
-    const datasets: { [key: string]: any }[] = await Promise.all(
+    const hashKeys = await Promise.all(
       keys.map(async (key) => {
+        const type = await redisClient.type(key);
+        return type === "hash" ? key : null;
+      })
+    );
+
+    const filteredKeys = hashKeys.filter((key) => key !== null);
+
+    const datasets: { [key: string]: any }[] = await Promise.all(
+      filteredKeys.map(async (key) => {
         const dataset = await redisClient.hGetAll(key);
         return { key, ...dataset };
       })
@@ -109,7 +107,6 @@ const checkForQueuedDatasets = async () => {
       }));
   } catch (error) {
     console.error(`[checkForQueuedDatasets] Error: ${error}`);
-    throw error;
   }
 };
 
@@ -164,12 +161,56 @@ const getAllDatasetsForYearAndCustomer = async (
   }
 };
 
+const addDatasetsToProcessingQueue = async (datasets: DatasetQueueItem[]) => {
+  try {
+    await ensureRedisClient();
+    const pipeline = redisClient.multi();
+
+    datasets.forEach(({ structure, hash }) => {
+      pipeline.hSet(structure.dir, {
+        hash,
+        structure: JSON.stringify(structure),
+        status: "added",
+        lastUpdated: new Date().toISOString(),
+      });
+    });
+
+    await pipeline.exec();
+  } catch (error) {
+    console.error(`[addDatasetsToProcessingQueue] Error: ${error}`);
+    throw error;
+  }
+};
+
+const saveInitialState = async (initialState: string) => {
+  try {
+    await ensureRedisClient();
+    await redisClient.set("initialState", initialState);
+  } catch (error) {
+    console.error(`[saveInitialState] Error: ${error}`);
+    throw error;
+  }
+};
+
+const getInitialState = async () => {
+  try {
+    await ensureRedisClient();
+    return await redisClient.get("initialState");
+  } catch (error) {
+    console.error(`[getInitialState] Error: ${error}`);
+    throw error;
+  }
+};
+
 export {
+  redisClient,
   checkIfDatasetIsNew,
-  addDatasetToProcessingQueue,
+  addDatasetsToProcessingQueue,
   checkForQueuedDatasets,
   removeDatasetFromList,
   getAllDatasetsForYearAndCustomer,
   checkForReadyToQueueDatasets,
   changeDatasetStatus,
+  saveInitialState,
+  getInitialState,
 };

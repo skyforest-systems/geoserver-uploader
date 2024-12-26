@@ -23,12 +23,7 @@ export async function createStore(
         await geoserver.delete(storeUrl + "?recurse=true");
         console.log(`[GeoServer] Store removed: ${storeName}`);
       }
-    } catch (checkError) {
-      console.error(
-        `[GeoServer] Error checking store existence: ${checkError}`
-      );
-      throw checkError;
-    }
+    } catch (checkError) {}
 
     // Create the new store
     const response = await geoserver.post(

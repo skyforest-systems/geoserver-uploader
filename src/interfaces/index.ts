@@ -5,3 +5,8 @@ export interface DatasetStructure {
   dataset: string;
   dir: string;
 }
+
+export type DatasetQueueItem = {
+  structure: DatasetStructure;
+  hash: string;
+};
