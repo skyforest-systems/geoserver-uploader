@@ -18,6 +18,7 @@ services:
     container_name: geoserver
     hostname: geoserver
     image: docker.osgeo.org/geoserver:2.26.x
+    restart: always
     ports:
       - 8080:8080
     healthcheck:
