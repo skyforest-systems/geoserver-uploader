@@ -52,5 +52,14 @@ services:
       - ./geoserver:/opt/geoserver_data
       - ./files:/files 
 
+  watchtower:
+    container_name: watchtower
+    hostname: watchtower
+    image: containrrr/watchtower
+    restart: always
+    command: --interval 30
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
 volumes:
   redis-insight:
