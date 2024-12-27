@@ -1,18 +1,18 @@
-FROM osgeo/gdal:ubuntu-small-3.6.3
+FROM node:22.12.0-bookworm
 
 WORKDIR /app
 
-RUN apt-get update
+RUN apt-get update &&\
+    apt-get install -y binutils libproj-dev gdal-bin
 
-RUN apt-get install -y \
-    python3-pip \
-    python3-gdal \
-    python3-dev \
-    python3-setuptools \
-    build-essential \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+COPY package.json /app/package.json
 
-COPY scripts /scripts
+RUN npm install
 
-ENTRYPOINT ["sh", "/scripts/entrypoint.sh"]
+COPY . /app
+
+RUN npm install typescript -g
+
+RUN tsc
+
+CMD ["node", "dist/index.js"]

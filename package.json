@@ -10,6 +10,7 @@
     "cluster-key-slot": "^1.1.2",
     "combined-stream": "^1.0.8",
     "delayed-stream": "^1.0.0",
+    "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "follow-redirects": "^1.15.9",
     "form-data": "^4.0.1",
@@ -26,7 +27,8 @@
     "ts-node-dev": "^2.0.0",
     "tsc": "^2.0.4",
     "universalify": "^2.0.1",
-    "yallist": "^4.0.0"
+    "yallist": "^4.0.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
@@ -34,7 +36,8 @@
     "typescript": "^5.7.2"
   },
   "scripts": {
-    "dev": "ts-node-dev src/index.ts"
+    "dev": "ts-node-dev src/index.ts",
+    "start": "tsc && node dist/index.js"
   },
   "keywords": [],
   "author": "",

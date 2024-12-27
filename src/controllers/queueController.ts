@@ -35,7 +35,7 @@ export async function queueController() {
     return;
   }
   if (queuedDatasets.length === 0) {
-    console.log("[queue-controller] no datasets to process");
+    // console.log("[queue-controller] no datasets to process");
     return;
   }
 

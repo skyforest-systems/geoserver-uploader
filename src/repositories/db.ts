@@ -1,8 +1,11 @@
 import { createClient } from "redis";
 import { DatasetQueueItem, DatasetStructure } from "../interfaces";
+import environments from "../environments";
 
 // Create a single Redis client instance and reuse it
-const redisClient = createClient();
+const redisClient = createClient({
+  url: environments.redisUrl,
+});
 
 redisClient.on("error", (err) => console.log("Redis Client Error", err));
 

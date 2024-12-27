@@ -8,9 +8,9 @@ export async function geoserverController() {
     const workspaces = await getWorkspaces();
 
     for (const workspace of workspaces) {
-      console.log(
-        `[geoserver-controller] checking workspace ${workspace.name}`
-      );
+      // console.log(
+      //   `[geoserver-controller] checking workspace ${workspace.name}`
+      // );
       const layers = await getLayersFromWorkspace(workspace.name);
       if (!layers || layers.length === 0) {
         console.log(
