@@ -27,14 +27,18 @@ export async function createLayerGroupFromWorkspace(
   await createLayerGroup(
     workspaceName,
     layerGroupName,
-    [...rasterLayers, ...analysisLayers, ...pointLayers],
+    [
+      ...rasterLayers,
+      // ...analysisLayers,
+      ...pointLayers,
+    ],
     [
       ...rasterLayers.map((e) => ({
         name: `raster`,
       })),
-      ...analysisLayers.map((e) => ({
-        name: `raster`,
-      })),
+      // ...analysisLayers.map((e) => ({
+      //   name: `raster`,
+      // })),
       ...pointLayers.map((e) => ({
         name: `${workspaceName}:${e.name}`,
       })),

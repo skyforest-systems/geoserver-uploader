@@ -28,7 +28,7 @@ export default async function processVector(structure: DatasetStructure) {
   );
 
   const { dir, dataset } = structure;
-  const outputShapefilePath = path.join(dir, "points.shp");
+  const outputShapefilePath = path.join(dir, "points_output.shp");
 
   try {
     // Find vector datasets in the directory

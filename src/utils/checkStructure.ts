@@ -18,6 +18,8 @@ export function checkStructure(
     const type = folderStructure[3];
     const dataset = folderStructure[4];
 
+    if (path.includes("_output")) return null; // Skip output files
+
     if (type.toLowerCase() === "raster") {
       return {
         customer,

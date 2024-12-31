@@ -20,7 +20,6 @@ export async function createLayer(
       {
         coverage: {
           name: layerName,
-          nativeName: "raster",
           title: layerName,
           srs: "EPSG:3006",
           enabled: true,

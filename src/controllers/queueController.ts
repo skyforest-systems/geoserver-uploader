@@ -15,6 +15,7 @@ import { createStyle } from "../services/createStyle";
 import { createVectorLayer } from "../services/createVectorLayer";
 import { createWorkspace } from "../services/createWorkspace";
 import { getLayersFromWorkspace } from "../services/getLayersFromWorkspace";
+import processAnalysis from "../services/processAnalysis";
 import processRaster from "../services/processRaster";
 import processVector from "../services/processVectorFile";
 import { hashDirectory } from "../utils/hashDirectory";
@@ -99,9 +100,17 @@ export async function queueController() {
 
         await changeDatasetStatus(processingDataset.dir, "processed");
       } else if (processingDataset.type === "analysis") {
-        console.log(
-          "[queue-controller] analysis processment not implemented yet"
-        );
+        await changeDatasetStatus(processingDataset.dir, "processing");
+        const workspaceName = `${processingDataset.customer}_${processingDataset.year}`;
+        const storeName = `${processingDataset.customer}_${processingDataset.year}_analysis`;
+        const layerName = `${processingDataset.customer}_${processingDataset.year}_analysis`;
+        const layerGroupName = `${processingDataset.customer}_${processingDataset.year}`;
+
+        const analysis = await processAnalysis(processingDataset);
+
+        await createWorkspace(workspaceName);
+        await createStore(workspaceName, storeName, analysis);
+        await createLayer(workspaceName, storeName, layerName);
       }
     } catch (error) {
       await changeDatasetStatus(processingDataset.dir, "queued");
