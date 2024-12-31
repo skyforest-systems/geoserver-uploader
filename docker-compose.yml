@@ -1,8 +1,45 @@
 services:
+  uploader:
+    container_name: uploader
+    hostname: uploader
+    image: paschendale/skyforest-geoserver-uploader:latest
+    build: 
+      context: .
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - GEOSERVER_URL=http://geoserver:8080/geoserver
+      - GEOSERVER_USERNAME=admin
+      - GEOSERVER_PASSWORD=geoserver
+      - RASTER_EXTENSIONS=.jpg,.jpeg
+      - POINTS_EXTENSIONS=.geojson,.shp,.kml,.sld
+      - ANALYSIS_EXTENSIONS=.tif,.geotiff,.tiff
+    restart: always
+    volumes:
+      - ./files:/app/files
+
+  redis:
+    container_name: redis
+    hostname: redis
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+      
+  redis-insight:
+    container_name: redis-insight
+    hostname: redis-insight
+    image: redis/redisinsight:latest
+    restart: always
+    ports:
+      - "5540:5540"
+    volumes:
+      - redis-insight:/data
+  
   geoserver:
     container_name: geoserver
     hostname: geoserver
     image: docker.osgeo.org/geoserver:2.26.x
+    restart: always
     ports:
       - 8080:8080
     healthcheck:
@@ -12,19 +49,17 @@ services:
       retries: 50
       start_period: 30s
     volumes:
-      - ./data/geoserver:/opt/geoserver_data
-      - ./data/uploader/RASTER:/mnt/skyforest/2024/ # these two paths must be equal on the container side
+      - ./geoserver:/opt/geoserver_data
+      - ./files:/files 
 
-  uploader:
-    container_name: uploader
-    build: .
-    environment:
-      - GEOSERVER_URL=http://geoserver:8080/geoserver
-      - GEOSERVER_USERNAME=admin
-      - GEOSERVER_PASSWORD=geoserver
-    depends_on:
-      geoserver:
-        condition: service_healthy
+  watchtower:
+    container_name: watchtower
+    hostname: watchtower
+    image: containrrr/watchtower
+    restart: always
+    command: --interval 30
     volumes:
-      - ./data/uploader/RASTER:/mnt/skyforest/2024/ # these two paths must be equal/ # these two paths must be equal on the container side
-      # - ./scripts:/scripts # uncomment this line to run the scripts locally
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  redis-insight:

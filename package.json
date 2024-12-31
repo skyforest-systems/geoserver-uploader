@@ -1,0 +1,46 @@
+{
+  "name": "skyforest-geoserver-uploader",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "dependencies": {
+    "asynckit": "^0.4.0",
+    "axios": "^1.7.7",
+    "child_process": "^1.0.2",
+    "chokidar": "^4.0.1",
+    "cluster-key-slot": "^1.1.2",
+    "combined-stream": "^1.0.8",
+    "delayed-stream": "^1.0.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "follow-redirects": "^1.15.9",
+    "form-data": "^4.0.1",
+    "fs-extra": "^11.2.0",
+    "generic-pool": "^3.9.0",
+    "graceful-fs": "^4.2.11",
+    "jsonfile": "^6.1.0",
+    "mime-db": "^1.52.0",
+    "mime-types": "^2.1.35",
+    "proxy-from-env": "^1.1.0",
+    "readdirp": "^4.0.2",
+    "redis": "^4.7.0",
+    "redlock": "^5.0.0-beta.2",
+    "ts-node-dev": "^2.0.0",
+    "tsc": "^2.0.4",
+    "universalify": "^2.0.1",
+    "yallist": "^4.0.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  },
+  "scripts": {
+    "dev": "ts-node-dev src/index.ts",
+    "start": "tsc && node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
