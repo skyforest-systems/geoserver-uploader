@@ -8,11 +8,15 @@ import {
   saveInitialState,
 } from "../repositories/db";
 import { createLayer } from "../services/createLayer";
-import { createLayerGroup } from "../services/createLayerGroup";
+import { createLayerGroupFromWorkspace } from "../services/createLayerGroupFromWorkspace";
+import { createShapefileStore } from "../services/createShapefileStore";
 import { createStore } from "../services/createStore";
+import { createStyle } from "../services/createStyle";
+import { createVectorLayer } from "../services/createVectorLayer";
 import { createWorkspace } from "../services/createWorkspace";
 import { getLayersFromWorkspace } from "../services/getLayersFromWorkspace";
 import processRaster from "../services/processRaster";
+import processVector from "../services/processVectorFile";
 import { hashDirectory } from "../utils/hashDirectory";
 
 export async function queueController() {
@@ -59,30 +63,46 @@ export async function queueController() {
     }
 
     try {
-      await changeDatasetStatus(processingDataset.dir, "processing");
+      if (processingDataset.type === "raster") {
+        await changeDatasetStatus(processingDataset.dir, "processing");
 
-      const workspaceName = `${processingDataset.customer}_${processingDataset.year}`;
-      const storeName = `${processingDataset.customer}_${processingDataset.year}_${processingDataset.dataset}`;
-      const layerName = `${processingDataset.customer}_${processingDataset.year}_${processingDataset.dataset}`;
-      const layerGroupName = `${processingDataset.customer}_${processingDataset.year}`;
+        const workspaceName = `${processingDataset.customer}_${processingDataset.year}`;
+        const storeName = `${processingDataset.customer}_${processingDataset.year}_${processingDataset.dataset}`;
+        const layerName = `${processingDataset.customer}_${processingDataset.year}_${processingDataset.dataset}`;
+        const layerGroupName = `${processingDataset.customer}_${processingDataset.year}`;
 
-      const processedRaster = await processRaster(processingDataset);
+        const processedRaster = await processRaster(processingDataset);
 
-      await createWorkspace(workspaceName);
-      await createStore(workspaceName, storeName, processedRaster);
-      await createLayer(workspaceName, storeName, layerName);
+        await createWorkspace(workspaceName);
+        await createStore(workspaceName, storeName, processedRaster);
+        await createLayer(workspaceName, storeName, layerName);
 
-      const layers = await getLayersFromWorkspace(workspaceName);
+        const layers = await getLayersFromWorkspace(workspaceName);
+        await createLayerGroupFromWorkspace(workspaceName, layerGroupName);
 
-      if (layers.length === 0) {
+        await changeDatasetStatus(processingDataset.dir, "processed");
+      } else if (processingDataset.type === "points") {
+        await changeDatasetStatus(processingDataset.dir, "processing");
+        const workspaceName = `${processingDataset.customer}_${processingDataset.year}`;
+        const storeName = `${processingDataset.customer}_${processingDataset.year}_points`;
+        const layerName = `${processingDataset.customer}_${processingDataset.year}_points`;
+        const styleName = `${processingDataset.customer}_${processingDataset.year}_points`;
+        const layerGroupName = `${processingDataset.customer}_${processingDataset.year}`;
+
+        const points = await processVector(processingDataset);
+
+        await createWorkspace(workspaceName);
+        await createShapefileStore(workspaceName, storeName, points);
+        await createStyle(workspaceName, layerName, processingDataset);
+        await createVectorLayer(workspaceName, storeName, layerName, styleName);
+        await createLayerGroupFromWorkspace(workspaceName, layerGroupName);
+
+        await changeDatasetStatus(processingDataset.dir, "processed");
+      } else if (processingDataset.type === "analysis") {
         console.log(
-          `[dir-removed-controller] no layers found in workspace ${workspaceName}, no layer group was created`
+          "[queue-controller] analysis processment not implemented yet"
         );
-      } else {
-        await createLayerGroup(workspaceName, layerGroupName, layers);
       }
-
-      await changeDatasetStatus(processingDataset.dir, "processed");
     } catch (error) {
       await changeDatasetStatus(processingDataset.dir, "queued");
       console.error(error);

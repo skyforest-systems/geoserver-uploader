@@ -31,16 +31,16 @@ export function checkStructure(
         customer,
         year,
         type: "points",
-        dataset,
-        dir: folderStructure.slice(0, 5).join("/"),
+        dataset: dataset.split(".")[0],
+        dir: folderStructure.slice(0, 4).join("/"),
       };
     } else if (type.toLowerCase() === "analysis") {
       return {
         customer,
         year,
         type: "analysis",
-        dataset,
-        dir: folderStructure.slice(0, 5).join("/"),
+        dataset: dataset.split(".")[0],
+        dir: folderStructure.slice(0, 4).join("/"),
       };
     } else {
       return null;

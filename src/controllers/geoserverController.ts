@@ -7,6 +7,8 @@ export async function geoserverController() {
     // this controller executes cleanup operations on geoserver
     const workspaces = await getWorkspaces();
 
+    if (!workspaces || workspaces.length === 0) return;
+
     for (const workspace of workspaces) {
       // console.log(
       //   `[geoserver-controller] checking workspace ${workspace.name}`

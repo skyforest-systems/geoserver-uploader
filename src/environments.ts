@@ -13,7 +13,7 @@ const EnvSchema = z.object({
   POINTS_EXTENSIONS: z
     .string()
     .transform((val) => val.split(","))
-    .default(".geojson,.shp,.kml,.kmz"),
+    .default(".geojson,.shp,.kml,.sld"),
   ANALYSIS_EXTENSIONS: z
     .string()
     .transform((val) => val.split(","))

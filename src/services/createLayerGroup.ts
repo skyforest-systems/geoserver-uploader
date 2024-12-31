@@ -5,13 +5,14 @@ import geoserver from "../repositories/geoserver";
  * @param {string} groupName - The name of the layer group.
  * @param {string} workspaceName - The name of the workspace.
  * @param {Array<{name: string, href: string}>} layers - The list of layer names and their references to include in the group.
+ * @param {Array<{name: string, href: string}>} styles - The list of styles names to include in the group.
  */
 export async function createLayerGroup(
   groupName: string,
   workspaceName: string,
-  layers: { name: string; href: string }[]
+  layers: { name: string; href: string }[],
+  styles: { name: string }[]
 ) {
-
   workspaceName = workspaceName.toLowerCase().replace(/ /g, "_");
   groupName = groupName.toLowerCase().replace(/ /g, "_");
   layers = layers.map((layer) => {
@@ -47,9 +48,7 @@ export async function createLayerGroup(
             layer: layers,
           },
           styles: {
-            style: layers.map(() => ({
-              name: "raster", // Default style for each layer
-            })),
+            style: styles,
           },
         },
       }

@@ -11,7 +11,7 @@ services:
       - GEOSERVER_USERNAME=admin
       - GEOSERVER_PASSWORD=geoserver
       - RASTER_EXTENSIONS=.jpg,.jpeg
-      - POINTS_EXTENSIONS=.geojson,.shp,.kml,.kmz
+      - POINTS_EXTENSIONS=.geojson,.shp,.kml,.sld
       - ANALYSIS_EXTENSIONS=.tif,.geotiff,.tiff
     restart: always
     volumes:
