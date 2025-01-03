@@ -25,7 +25,7 @@ export async function fileChangeController(path: string, event: string) {
       extensions = environments.analysisExtensions;
 
     if (extensions?.includes(fileExtension!)) {
-      const datasetHash = hashDirectory(structure.dir, extensions);
+      const datasetHash = await hashDirectory(structure.dir, extensions);
 
       if (!datasetHash) {
         console.log(

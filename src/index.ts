@@ -19,11 +19,11 @@ app.listen(port, async () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
 
   const actualState =
-    hashDirectory("./files", [
+    (await hashDirectory("./files", [
       ...environments.rasterExtensions,
       ...environments.pointsExtensions,
       ...environments.analysisExtensions,
-    ]) || "";
+    ])) || "";
 
   const lastState = await getInitialState();
 

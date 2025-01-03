@@ -118,11 +118,11 @@ export async function queueController() {
     } finally {
       console.log("[server] saving actual state & releasing lock", lockKey);
       await saveInitialState(
-        hashDirectory("./files", [
+        (await hashDirectory("./files", [
           ...environments.rasterExtensions,
           ...environments.pointsExtensions,
           ...environments.analysisExtensions,
-        ]) || ""
+        ])) || ""
       );
       await redisClient.del(lockKey);
     }
