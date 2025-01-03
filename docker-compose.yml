@@ -1,4 +1,13 @@
 services:
+  portainer:
+    image: portainer/portainer
+    ports:
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./portainer:/data
+    restart: always
+
   uploader:
     container_name: uploader
     hostname: uploader
