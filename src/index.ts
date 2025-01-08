@@ -18,12 +18,17 @@ app.get("/", (req: Request, res: Response) => {
 app.listen(port, async () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
 
+  console.log("[server] Checking for changes since last initialization");
   const actualState =
-    (await hashDirectory("./files", [
-      ...environments.rasterExtensions,
-      ...environments.pointsExtensions,
-      ...environments.analysisExtensions,
-    ])) || "";
+    (await hashDirectory(
+      "./files",
+      [
+        ...environments.rasterExtensions,
+        ...environments.pointsExtensions,
+        ...environments.analysisExtensions,
+      ],
+      true
+    )) || "";
 
   const lastState = await getInitialState();
 
