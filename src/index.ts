@@ -56,7 +56,9 @@ app.listen(port, async () => {
           : 0;
 
         console.log(
-          `[control] first run rogress: ${processedFiles}/${totalFiles} files processed. ETA: ${eta}s`
+          `[control] first run progress: ${processedFiles}/${totalFiles} (${
+            (processedFiles / totalFiles) * 100
+          }%) files processed. ETA: ${eta}s`
         );
       }
 
