@@ -82,17 +82,15 @@ app.listen(port, async () => {
       fileWatcher(event, path, isChokidarReady);
     });
 
-  if (isChokidarReady) {
     setInterval(() => {
-      changeWatcher();
+      isChokidarReady && changeWatcher();
     }, 5000);
 
     setInterval(() => {
-      queueWatcher();
+      isChokidarReady && queueWatcher();
     }, 5000);
 
     setInterval(() => {
-      geoserverWatcher();
+      isChokidarReady && geoserverWatcher();
     }, 10000);
-  }
 });
