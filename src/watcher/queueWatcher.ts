@@ -1,28 +1,20 @@
-import { DatasetStructure, FileOnRedis } from "../interfaces";
-import {
-  acquireLock,
-  changeFileStatusByBasepath,
-  getFilesByStatus,
-  releaseLock,
-} from "../repositories/db";
-import { createLayer } from "../services/createLayer";
-import { createLayerGroupFromWorkspace } from "../services/createLayerGroupFromWorkspace";
-import { createShapefileStore } from "../services/createShapefileStore";
-import { createStore } from "../services/createStore";
-import { createStyle } from "../services/createStyle";
-import { createVectorLayer } from "../services/createVectorLayer";
-import { createWorkspace } from "../services/createWorkspace";
-import { getLayersFromWorkspace } from "../services/getLayersFromWorkspace";
-import processAnalysis from "../services/processAnalysis";
+import { FileOnRedis } from "../interfaces";
+import { acquireLock, getFilesByStatus, releaseLock } from "../repositories/db";
 import processDataset from "../services/processDataset";
-import processRaster from "../services/processRaster";
-import processVector from "../services/processVectorFile";
 import { checkStructure } from "../utils/checkStructure";
+
+const TIME_BETWEEN_CHECKS = 60 * 1000;
 
 export async function queueWatcher() {
   try {
+    const lock = await acquireLock("queueWatcher", 1800);
+    if (!lock) return;
     const queuedFiles = await getFilesByStatus("queued");
-    if (queuedFiles.length === 0) return;
+
+    if (queuedFiles.length === 0) {
+      console.log(`[queueWatcher] no queued files found`);
+      return;
+    }
 
     const filesByBasepath = queuedFiles.reduce(
       (acc: { [key: string]: FileOnRedis[] }, file: FileOnRedis) => {
@@ -44,7 +36,7 @@ export async function queueWatcher() {
       const oldestFile = files[0];
       const now = Date.now();
 
-      if (now - oldestFile.ts > 10 * 1000) {
+      if (now - oldestFile.ts > TIME_BETWEEN_CHECKS) {
         const lock = await acquireLock(`lock::${basepath}`);
         if (!lock) continue;
 
@@ -65,12 +57,14 @@ export async function queueWatcher() {
       } else {
         console.log(
           `[queueWatcher] dataset ignored: ${basepath}, ready in ${
-            (oldestFile.ts + 10 * 1000 - now) / 1000
+            (oldestFile.ts + TIME_BETWEEN_CHECKS - now) / 1000
           }s`
         );
       }
     }
   } catch (error) {
     console.error(`[queueWatcher] error:`, error);
+  } finally {
+    releaseLock("queueWatcher");
   }
 }

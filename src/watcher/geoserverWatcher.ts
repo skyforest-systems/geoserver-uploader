@@ -1,9 +1,12 @@
+import { acquireLock, releaseLock } from "../repositories/db";
 import { getLayersFromWorkspace } from "../services/getLayersFromWorkspace";
 import { getWorkspaces } from "../services/getWorkspaces";
 import { removeWorkspace } from "../services/removeWorkspace";
 
 export async function geoserverWatcher() {
   try {
+    const lock = await acquireLock("geoserverWatcher", 1800);
+    if (!lock) return;
     // this controller executes cleanup operations on geoserver
     const workspaces = await getWorkspaces();
 
@@ -20,5 +23,7 @@ export async function geoserverWatcher() {
     }
   } catch (error) {
     console.error(`[geoserverWatcher] error:`, error);
+  } finally {
+    releaseLock("geoserverWatcher");
   }
 }
