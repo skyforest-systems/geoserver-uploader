@@ -8,9 +8,9 @@ const LOCK_TTL_FOR_QUEUE_WATCHER = 12 * 60 * 60; // 12 hours
 const LOCK_TTL_FOR_PROCESSING = 60 * 60; // 1 hour
 
 export async function queueWatcher() {
+  const lock = await acquireLock("queueWatcher", LOCK_TTL_FOR_QUEUE_WATCHER);
+  if (!lock) return;
   try {
-    const lock = await acquireLock("queueWatcher", LOCK_TTL_FOR_QUEUE_WATCHER);
-    if (!lock) return;
     const queuedFiles = await getFilesByStatus("queued");
 
     if (queuedFiles.length === 0) {

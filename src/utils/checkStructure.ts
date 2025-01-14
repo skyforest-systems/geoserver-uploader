@@ -7,9 +7,9 @@ export function checkStructure(
   let folderStructure: Array<string>;
 
   if (fullPath) {
-    folderStructure = path.split("/").reverse().slice(0, 5).reverse();
+    folderStructure = path.replace(/\\/g, '/').split("/").reverse().slice(0, 5).reverse();
   } else {
-    folderStructure = path.split("/");
+    folderStructure = path.replace(/\\/g, "/").split("/");
   }
 
   try {
@@ -48,7 +48,7 @@ export function checkStructure(
       return null;
     }
   } catch (error) {
-    console.error(`[check-structure] couldn't parse path:`, path);
+    console.error(`[check-structure] couldn't parse path: ${path}`, error);
     return null;
   }
 }

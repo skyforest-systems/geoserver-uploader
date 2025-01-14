@@ -14,10 +14,9 @@ export async function fileWatcher(
   path: string,
   shouldLog: boolean = false
 ) {
+  const lock = await acquireLock("fileWatcher", LOCK_TTL_FOR_FILE_WATCHER);
+  if (!lock) return;
   try {
-    const lock = await acquireLock("fileWatcher", LOCK_TTL_FOR_FILE_WATCHER);
-    if (!lock) return;
-
     shouldLog &&
       console.log(`fileWatcher triggered for ${event} event on ${path}`);
     if (event === "add" || event === "change") {

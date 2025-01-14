@@ -128,6 +128,19 @@ export async function releaseLock(key: string) {
   }
 }
 
+export async function releaseAllLocks() {
+  try {
+    await ensureRedisClient();
+
+    const keys = await getKeys("lock:::*");
+    for (const key of keys) {
+      await redisClient.del(key);
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
 export async function changeFileStatusByBasepath(
   basepath: string,
   status: FileOnRedis["status"]

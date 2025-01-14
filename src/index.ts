@@ -6,6 +6,7 @@ import { changeWatcher } from "./watcher/changeWatcher";
 import { queueWatcher } from "./watcher/queueWatcher";
 import countTotalFiles from "./services/countTotalFiles";
 import { geoserverWatcher } from "./watcher/geoserverWatcher";
+import { releaseAllLocks } from "./repositories/db";
 
 const app: Express = express();
 const port = process.env.PORT || 2000;
@@ -16,6 +17,8 @@ app.get("/", (req: Request, res: Response) => {
 
 app.listen(port, async () => {
   console.log(`[control] starting up...`);
+
+  releaseAllLocks();
 
   const folderPath = "./files";
   const totalFiles = countTotalFiles(folderPath);
@@ -85,13 +88,13 @@ app.listen(port, async () => {
 
   setInterval(() => {
     isChokidarReady && changeWatcher();
-  }, 5000);
+  }, 5 * 1000);
 
   setInterval(() => {
     isChokidarReady && queueWatcher();
-  }, 5000);
+  }, 5 * 1000);
 
   setInterval(() => {
     isChokidarReady && geoserverWatcher();
-  }, 10000);
+  }, 10 * 60 * 1000);
 });
