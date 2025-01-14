@@ -1,6 +1,8 @@
 import {
+  acquireLock,
   checkIfFileAlreadyExists,
   getFile,
+  releaseLock,
   saveFile,
 } from "../repositories/db";
 import { checkStructure } from "../utils/checkStructure";
@@ -11,6 +13,9 @@ export async function fileWatcher(
   shouldLog: boolean = false
 ) {
   try {
+    const lock = await acquireLock("fileWatcher", 1800);
+    if (!lock) return;
+
     shouldLog &&
       console.log(`fileWatcher triggered for ${event} event on ${path}`);
     if (event === "add" || event === "change") {
@@ -42,5 +47,9 @@ export async function fileWatcher(
 
       await saveFile({ ...file!, status: "removed" });
     }
-  } catch (error) {}
+  } catch (error) {
+    console.error(`[fileWatcher] error:`, error);
+  } finally {
+    releaseLock("fileWatcher");
+  }
 }

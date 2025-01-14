@@ -90,5 +90,5 @@ app.listen(port, async () => {
 
   setInterval(() => {
     geoserverWatcher();
-  }, 5000);
+  }, 10000);
 });
