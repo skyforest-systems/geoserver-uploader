@@ -1,12 +1,11 @@
 import express, { Express, Request, Response } from "express";
 import chokidar from "chokidar";
-import { fileChangeController } from "./controllers/fileChangeController";
-import { queueController } from "./controllers/queueController";
-import dirRemovedController from "./controllers/dirRemovedController";
-import { hashDirectory } from "./utils/hashDirectory";
 import environments from "./environments";
-import { getInitialState, saveInitialState } from "./repositories/db";
-import { geoserverController } from "./controllers/geoserverController";
+import { fileWatcher } from "./watcher/fileWatcher";
+import { changeWatcher } from "./watcher/changeWatcher";
+import { queueWatcher } from "./watcher/queueWatcher";
+import countTotalFiles from "./services/countTotalFiles";
+import { geoserverWatcher } from "./watcher/geoserverWatcher";
 
 const app: Express = express();
 const port = process.env.PORT || 2000;
@@ -16,69 +15,80 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.listen(port, async () => {
-  console.log(`[server]: Server is running at http://localhost:${port}`);
+  console.log(`[control] starting up...`);
 
-  console.log("[server] Checking for changes since last initialization");
-  const actualState =
-    (await hashDirectory(
-      "./files",
-      [
-        ...environments.rasterExtensions,
-        ...environments.pointsExtensions,
-        ...environments.analysisExtensions,
-      ],
-      true
-    )) || "";
+  const folderPath = "./files";
+  const totalFiles = countTotalFiles(folderPath);
+  let processedFiles = 0;
+  let startTime: number | null = null;
 
-  const lastState = await getInitialState();
+  console.log(`[control] found ${totalFiles} files in the folder.`);
 
-  let mustCallController = actualState !== lastState;
-
-  if (!mustCallController) {
-    console.log(
-      "[server] No changes since last initialization, skipping controller calls for first run"
-    );
+  if (totalFiles > 0) {
+    startTime = Date.now();
+  } else {
+    console.log("[control] no files found in the folder.");
   }
 
   // Start file watcher
-  const watcher = chokidar.watch("./files", {
-    ignoreInitial: false, // Ensure all events including initial ones are detected
-    persistent: true, // Keep watcher active
+  const watcher = chokidar.watch(folderPath, {
+    ignoreInitial: false,
+    persistent: true,
   });
+
+  let isChokidarReady = false;
 
   watcher
     .on("ready", async () => {
-      console.log("[server] file watcher is ready, saving actual state");
-      await saveInitialState(actualState);
-      mustCallController = true; // Update mustCallController to enable detection
+      console.log(
+        "[control] first run done, file watcher is ready for new changes."
+      );
+      isChokidarReady = true;
     })
-    .on("all", async (event, path) => {
-      if (event === "add" || event === "change" || event === "unlink") {
-        if (mustCallController) {
-          await fileChangeController(path, event);
-        }
+    .on("all", (event, path) => {
+      if (!isChokidarReady) {
+        processedFiles++;
+        const elapsedTime = (Date.now() - (startTime || 0)) / 1000; // in seconds
+        const eta = processedFiles
+          ? Math.round(
+              ((totalFiles - processedFiles) * elapsedTime) / processedFiles
+            )
+          : 0;
+
+        console.log(
+          `[control] first run rogress: ${processedFiles}/${totalFiles} files processed. ETA: ${eta}s`
+        );
       }
 
-      if (event === "unlinkDir" && mustCallController) {
-        await dirRemovedController(path);
-      }
+      // fileWatcher should be triggered only by add, change, or deletion events
+      if (!(event === "add" || event === "change" || event === "unlink"))
+        return;
+
+      // Skip files with '_output' in the name
+      if (path.includes("_output")) return;
+
+      // Only consider files with the desired extensions
+      const fileExtension = "." + path.split(".").pop();
+      if (
+        !(
+          environments.analysisExtensions.includes(fileExtension) ||
+          environments.pointsExtensions.includes(fileExtension) ||
+          environments.rasterExtensions.includes(fileExtension)
+        )
+      )
+        return;
+      fileWatcher(event, path, isChokidarReady);
     });
 
-  // Run queueController every 5 seconds
   setInterval(() => {
-    try {
-      queueController();
-    } catch (error) {
-      console.error("Error in queueController:", error);
-    }
+    isChokidarReady && changeWatcher();
   }, 5000);
 
-  // Run geoserverController every 5 seconds
   setInterval(() => {
-    try {
-      geoserverController();
-    } catch (error) {
-      console.error("Error in queueController:", error);
-    }
+    queueWatcher();
+  }, 5000);
+
+  setInterval(() => {
+    geoserverWatcher();
   }, 5000);
 });
