@@ -108,16 +108,11 @@ export async function acquireLock(key: string, ttl: number = 600) {
   try {
     await ensureRedisClient();
 
-    const aquired = await redisClient.set(key, "locked", {
+    const aquired = await redisClient.set("lock:::" + key, "locked", {
       NX: true, // Only set if not exists
       EX: ttl, // Set expiry time
     });
-
-    if (!aquired) {
-      return false;
-    } else {
-      return true;
-    }
+    return aquired;
   } catch (error) {
     throw error;
   }
@@ -127,7 +122,7 @@ export async function releaseLock(key: string) {
   try {
     await ensureRedisClient();
 
-    await redisClient.del(key);
+    await redisClient.del("lock:::" + key);
   } catch (error) {
     throw error;
   }

@@ -3,11 +3,13 @@ import { acquireLock, getFilesByStatus, releaseLock } from "../repositories/db";
 import processDataset from "../services/processDataset";
 import { checkStructure } from "../utils/checkStructure";
 
-const TIME_BETWEEN_CHECKS = 60 * 1000;
+const TIME_BETWEEN_CHECKS = 60 * 1000; // 1 minute
+const LOCK_TTL_FOR_QUEUE_WATCHER = 12 * 60 * 60; // 12 hours
+const LOCK_TTL_FOR_PROCESSING = 60 * 60; // 1 hour
 
 export async function queueWatcher() {
   try {
-    const lock = await acquireLock("queueWatcher", 1800);
+    const lock = await acquireLock("queueWatcher", LOCK_TTL_FOR_QUEUE_WATCHER);
     if (!lock) return;
     const queuedFiles = await getFilesByStatus("queued");
 
@@ -37,7 +39,10 @@ export async function queueWatcher() {
       const now = Date.now();
 
       if (now - oldestFile.ts > TIME_BETWEEN_CHECKS) {
-        const lock = await acquireLock(`lock::${basepath}`);
+        const lock = await acquireLock(
+          `lock::${basepath}`,
+          LOCK_TTL_FOR_PROCESSING
+        );
         if (!lock) continue;
 
         console.log(`[queueWatcher] lock acquired: ${basepath}`);

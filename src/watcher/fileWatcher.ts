@@ -7,13 +7,15 @@ import {
 } from "../repositories/db";
 import { checkStructure } from "../utils/checkStructure";
 
+const LOCK_TTL_FOR_FILE_WATCHER = 20 * 60; // 20 minutes
+
 export async function fileWatcher(
   event: "add" | "change" | "unlink",
   path: string,
   shouldLog: boolean = false
 ) {
   try {
-    const lock = await acquireLock("fileWatcher", 1800);
+    const lock = await acquireLock("fileWatcher", LOCK_TTL_FOR_FILE_WATCHER);
     if (!lock) return;
 
     shouldLog &&

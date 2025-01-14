@@ -39,13 +39,7 @@ app.listen(port, async () => {
   let isChokidarReady = false;
 
   watcher
-    .on("ready", async () => {
-      console.log(
-        "[control] first run done, file watcher is ready for new changes."
-      );
-      isChokidarReady = true;
-    })
-    .on("all", (event, path) => {
+    .on("add", () => {
       if (!isChokidarReady) {
         processedFiles++;
         const elapsedTime = (Date.now() - (startTime || 0)) / 1000; // in seconds
@@ -57,11 +51,18 @@ app.listen(port, async () => {
 
         console.log(
           `[control] first run progress: ${processedFiles}/${totalFiles} (${
-            (processedFiles / totalFiles) * 100
+            parseInt(String((processedFiles / totalFiles) * 10000)) / 100
           }%) files processed. ETA: ${eta}s`
         );
       }
-
+    })
+    .on("ready", async () => {
+      console.log(
+        "[control] first run done, file watcher is ready for new changes."
+      );
+      isChokidarReady = true;
+    })
+    .on("all", (event, path) => {
       // fileWatcher should be triggered only by add, change, or deletion events
       if (!(event === "add" || event === "change" || event === "unlink"))
         return;
@@ -82,15 +83,15 @@ app.listen(port, async () => {
       fileWatcher(event, path, isChokidarReady);
     });
 
-    setInterval(() => {
-      isChokidarReady && changeWatcher();
-    }, 5000);
+  setInterval(() => {
+    isChokidarReady && changeWatcher();
+  }, 5000);
 
-    setInterval(() => {
-      isChokidarReady && queueWatcher();
-    }, 5000);
+  setInterval(() => {
+    isChokidarReady && queueWatcher();
+  }, 5000);
 
-    setInterval(() => {
-      isChokidarReady && geoserverWatcher();
-    }, 10000);
+  setInterval(() => {
+    isChokidarReady && geoserverWatcher();
+  }, 10000);
 });

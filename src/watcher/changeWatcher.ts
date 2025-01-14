@@ -7,10 +7,16 @@ import {
 } from "../repositories/db";
 import { hashDirectory } from "../utils/hashDirectory";
 
+const LOCK_TTL_FOR_CHANGE_WATCHER = 60 * 60; // 1 hour
+
 export async function changeWatcher(shouldLog: boolean = false) {
   try {
-    const lock = acquireLock("changeWatcher", 1800);
+    const lock = await acquireLock(
+      "changeWatcher",
+      LOCK_TTL_FOR_CHANGE_WATCHER
+    );
     if (!lock) return;
+
     const newFiles = await getFilesByStatus("new");
 
     if (newFiles.length === 0) {
