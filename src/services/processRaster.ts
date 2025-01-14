@@ -12,8 +12,8 @@ export default async function processRaster(structure: DatasetStructure) {
   );
 
   const { dir, dataset } = structure;
-  const vrtPath = path.join(dir, "raster.vrt");
-  const tifPath = path.join(dir, "raster.tif");
+  const vrtPath = path.join(dir, "raster_output.vrt");
+  const tifPath = path.join(dir, "raster_output.tif");
   const fileListPath = path.join(dir, "file_list.txt");
 
   try {

@@ -34,6 +34,9 @@ const environments = {
   rasterExtensions: parsedEnv.RASTER_EXTENSIONS,
   pointsExtensions: parsedEnv.POINTS_EXTENSIONS,
   analysisExtensions: parsedEnv.ANALYSIS_EXTENSIONS,
+  extensions: parsedEnv.RASTER_EXTENSIONS.concat(
+    parsedEnv.POINTS_EXTENSIONS
+  ).concat(parsedEnv.ANALYSIS_EXTENSIONS),
 };
 
 export default environments;
