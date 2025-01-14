@@ -25,6 +25,8 @@ export async function checkIfFileAlreadyExists(path: string) {
   try {
     await ensureRedisClient();
 
+    path = path.replace(/\\/g, "/");
+
     const existsKey = await redisClient.exists("file:::" + path);
 
     if (existsKey === 0) {
@@ -41,6 +43,8 @@ export async function getFile(path: string): Promise<FileOnRedis | null> {
   try {
     await ensureRedisClient();
 
+    path = path.replace(/\\/g, "/");
+
     const file = (await redisClient.hGetAll("file:::" + path)) as any;
 
     return file;
@@ -52,6 +56,8 @@ export async function getFile(path: string): Promise<FileOnRedis | null> {
 export async function saveFile(file: FileOnRedis) {
   try {
     await ensureRedisClient();
+
+    file.path = file.path.replace(/\\/g, "/");
 
     await redisClient.hSet("file:::" + file.path, {
       ...file,
@@ -108,6 +114,8 @@ export async function acquireLock(key: string, ttl: number = 600) {
   try {
     await ensureRedisClient();
 
+    key = key.replace(/\\/g, "/");
+
     const aquired = await redisClient.set("lock:::" + key, "locked", {
       NX: true, // Only set if not exists
       EX: ttl, // Set expiry time
@@ -121,6 +129,8 @@ export async function acquireLock(key: string, ttl: number = 600) {
 export async function releaseLock(key: string) {
   try {
     await ensureRedisClient();
+
+    key = key.replace(/\\/g, "/");
 
     await redisClient.del("lock:::" + key);
   } catch (error) {
@@ -148,9 +158,17 @@ export async function changeFileStatusByBasepath(
   try {
     await ensureRedisClient();
 
+    basepath = basepath.replace(/\\/g, "/");
+
     const pattern = "file:::" + basepath + "*";
     const keys = await getKeys(pattern);
 
+    if (keys.length === 0) {
+      console.warn(
+        `[changeFileStatusByBasepath] no files found for ${basepath}`
+      );
+      return;
+    }
     for (const key of keys) {
       await redisClient.hSet(key, "status", status);
     }

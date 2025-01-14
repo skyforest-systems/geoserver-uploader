@@ -1,15 +1,23 @@
 import { FileOnRedis } from "../interfaces";
-import { acquireLock, getFilesByStatus, releaseLock } from "../repositories/db";
+import {
+  acquireLock,
+  changeFileStatusByBasepath,
+  getFilesByStatus,
+  releaseLock,
+} from "../repositories/db";
 import processDataset from "../services/processDataset";
 import { checkStructure } from "../utils/checkStructure";
+import pLimit from "p-limit"; // Ensure you install p-limit: npm install p-limit
 
 const TIME_BETWEEN_CHECKS = 60 * 1000; // 1 minute
 const LOCK_TTL_FOR_QUEUE_WATCHER = 12 * 60 * 60; // 12 hours
 const LOCK_TTL_FOR_PROCESSING = 60 * 60; // 1 hour
+const MAX_CONCURRENT_TASKS = 10; // Adjust based on system capabilities
 
 export async function queueWatcher() {
   const lock = await acquireLock("queueWatcher", LOCK_TTL_FOR_QUEUE_WATCHER);
   if (!lock) return;
+
   try {
     const queuedFiles = await getFilesByStatus("queued");
 
@@ -33,43 +41,65 @@ export async function queueWatcher() {
       } datasets to process`
     );
 
-    for (const basepath of Object.keys(filesByBasepath)) {
-      const files = filesByBasepath[basepath].sort((a, b) => a.ts - b.ts);
-      const oldestFile = files[0];
-      const now = Date.now();
+    const limit = pLimit(MAX_CONCURRENT_TASKS);
 
-      if (now - oldestFile.ts > TIME_BETWEEN_CHECKS) {
-        const lock = await acquireLock(
-          `lock::${basepath}`,
-          LOCK_TTL_FOR_PROCESSING
-        );
-        if (!lock) continue;
+    // Create tasks for each basepath
+    const tasks = Object.keys(filesByBasepath).map((basepath) =>
+      limit(async () => {
+        const files = filesByBasepath[basepath].sort((a, b) => a.ts - b.ts);
+        const oldestFile = files[0];
+        const now = Date.now();
 
-        console.log(`[queueWatcher] lock acquired: ${basepath}`);
-        try {
-          const structure = checkStructure(basepath);
-          if (!structure) {
-            console.warn(`[queueWatcher] invalid structure for ${basepath}`);
-            continue;
+        if (now - oldestFile.ts > TIME_BETWEEN_CHECKS) {
+          const lock = await acquireLock(
+            `lock::${basepath}`,
+            LOCK_TTL_FOR_PROCESSING
+          );
+          if (!lock) return;
+
+          console.log(`[queueWatcher] lock acquired: ${basepath}`);
+          try {
+            const structure = checkStructure(basepath);
+            if (!structure) {
+              console.warn(`[queueWatcher] invalid structure for ${basepath}`);
+              return;
+            }
+            console.log(
+              `[queueWatcher] processing ${structure.type}: ${basepath}`
+            );
+            await changeFileStatusByBasepath(basepath, "processing");
+            await processDataset(basepath, structure);
+            console.log(
+              `[queueWatcher] finished processing ${
+                structure.type
+              }: ${basepath} in ${Date.now() - now}ms`
+            );
+            await changeFileStatusByBasepath(basepath, "done");
+          } catch (error) {
+            console.error(
+              `[queueWatcher] error processing ${basepath}:`,
+              error
+            );
+            await changeFileStatusByBasepath(basepath, "queued");
+          } finally {
+            await releaseLock(`lock::${basepath}`);
+            console.log(`[queueWatcher] lock released: ${basepath}`);
           }
-          await processDataset(basepath, structure);
-        } catch (error) {
-          console.error(`[queueWatcher] error for dataset ${basepath}:`, error);
-        } finally {
-          await releaseLock(`lock::${basepath}`);
-          console.log(`[queueWatcher] lock released: ${basepath}`);
+        } else {
+          console.log(
+            `[queueWatcher] dataset ignored: ${basepath}, ready in ${
+              (oldestFile.ts + TIME_BETWEEN_CHECKS - now) / 1000
+            }s`
+          );
         }
-      } else {
-        console.log(
-          `[queueWatcher] dataset ignored: ${basepath}, ready in ${
-            (oldestFile.ts + TIME_BETWEEN_CHECKS - now) / 1000
-          }s`
-        );
-      }
-    }
+      })
+    );
+
+    // Run all tasks in parallel (with throttling)
+    await Promise.all(tasks);
   } catch (error) {
     console.error(`[queueWatcher] error:`, error);
   } finally {
-    releaseLock("queueWatcher");
+    await releaseLock("queueWatcher");
   }
 }

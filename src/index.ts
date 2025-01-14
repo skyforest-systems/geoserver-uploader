@@ -23,7 +23,7 @@ app.listen(port, async () => {
   const folderPath = "./files";
   const totalFiles = countTotalFiles(folderPath);
   let processedFiles = 0;
-  let startTime: number | null = null;
+  let startTime = new Date().getTime();
 
   console.log(`[control] found ${totalFiles} files in the folder.`);
 
@@ -61,7 +61,9 @@ app.listen(port, async () => {
     })
     .on("ready", async () => {
       console.log(
-        "[control] first run done, file watcher is ready for new changes."
+        `[control] first run done in ${
+          (Date.now() - startTime) / 1000
+        }s, file watcher is ready for new changes.`
       );
       isChokidarReady = true;
     })

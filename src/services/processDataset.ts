@@ -20,9 +20,6 @@ export default async function processDataset(
   const layerGroupName = `${workspaceName}`;
 
   try {
-    console.log(`[queueWatcher] processing ${structure.type}: ${basepath}`);
-    await changeFileStatusByBasepath(basepath, "processing");
-
     if (structure.type === "raster") {
       const storeName = `${workspaceName}_${structure.dataset}`;
       const layerName = storeName;
@@ -52,19 +49,7 @@ export default async function processDataset(
     }
 
     await createLayerGroupFromWorkspace(workspaceName, layerGroupName);
-    console.log(
-      `[queueWatcher] finished processing ${structure.type}: ${basepath} in ${
-        Date.now() - now
-      }ms`
-    );
-
-    await changeFileStatusByBasepath(basepath, "done");
   } catch (error) {
-    console.error(
-      `[queueWatcher] error processing ${structure.type} ${basepath}:`,
-      error
-    );
-    await changeFileStatusByBasepath(basepath, "queued");
     throw error;
   }
 }

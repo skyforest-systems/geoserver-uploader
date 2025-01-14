@@ -20,8 +20,6 @@ const EnvSchema = z.object({
     .default(".tif,.geotiff,.tiff"),
 });
 
-console.log(process.env);
-
 // Parse and validate the environment variables
 const parsedEnv = EnvSchema.parse(process.env);
 

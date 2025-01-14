@@ -29,7 +29,7 @@ export async function changeWatcher() {
 
     console.log(`[changeWatcher] detected ${newFiles.length} new files`);
 
-    for await (const file of newFiles) {
+    for (const file of newFiles) {
       let now = new Date().getTime();
       // console.log(`[changeWatcher] hashing this file: ${file.path}`);
 
