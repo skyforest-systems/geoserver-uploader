@@ -5,6 +5,7 @@ import { fileWatcher } from "./watcher/fileWatcher";
 import { changeWatcher } from "./watcher/changeWatcher";
 import { queueWatcher } from "./watcher/queueWatcher";
 import countTotalFiles from "./services/countTotalFiles";
+import { geoserverWatcher } from "./watcher/geoserverWatcher";
 
 const app: Express = express();
 const port = process.env.PORT || 2000;
@@ -85,5 +86,9 @@ app.listen(port, async () => {
 
   setInterval(() => {
     queueWatcher();
+  }, 5000);
+
+  setInterval(() => {
+    geoserverWatcher();
   }, 5000);
 });
