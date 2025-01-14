@@ -6,19 +6,23 @@ import { changeWatcher } from "./watcher/changeWatcher";
 import { queueWatcher } from "./watcher/queueWatcher";
 import countTotalFiles from "./services/countTotalFiles";
 import { geoserverWatcher } from "./watcher/geoserverWatcher";
-import { releaseAllLocks } from "./repositories/db";
+import getLocks, {
+  releaseAllLocks,
+  revertProcessingStatusToQueued,
+} from "./repositories/db";
 
 const app: Express = express();
 const port = process.env.PORT || 2000;
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello there");
+app.get("/locks", async (req: Request, res: Response) => {
+  res.send(await getLocks());
 });
 
 app.listen(port, async () => {
   console.log(`[control] starting up...`);
 
   releaseAllLocks();
+  revertProcessingStatusToQueued();
 
   const folderPath = "./files";
   const totalFiles = countTotalFiles(folderPath);

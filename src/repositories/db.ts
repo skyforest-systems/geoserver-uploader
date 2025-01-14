@@ -151,6 +151,24 @@ export async function releaseAllLocks() {
   }
 }
 
+export async function revertProcessingStatusToQueued() {
+  try {
+    await ensureRedisClient();
+
+    // get all keys, check those with the status processing, change those to queued
+
+    const keys = await getKeys("file:::*");
+    for (const key of keys) {
+      const file = await redisClient.hGetAll(key);
+      if (file.status === "processing") {
+        await redisClient.hSet(key, "status", "queued");
+      }
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
 export async function changeFileStatusByBasepath(
   basepath: string,
   status: FileOnRedis["status"]
@@ -172,6 +190,17 @@ export async function changeFileStatusByBasepath(
     for (const key of keys) {
       await redisClient.hSet(key, "status", status);
     }
+  } catch (error) {
+    throw error;
+  }
+}
+
+export default async function getLocks() {
+  try {
+    const pattern = "lock:::*";
+    const keys = await getKeys(pattern);
+
+    return keys;
   } catch (error) {
     throw error;
   }

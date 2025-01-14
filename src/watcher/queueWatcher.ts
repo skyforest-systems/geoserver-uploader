@@ -52,7 +52,7 @@ export async function queueWatcher() {
 
         if (now - oldestFile.ts > TIME_BETWEEN_CHECKS) {
           const lock = await acquireLock(
-            `lock::${basepath}`,
+            `${basepath}`,
             LOCK_TTL_FOR_PROCESSING
           );
           if (!lock) return;
@@ -82,7 +82,7 @@ export async function queueWatcher() {
             );
             await changeFileStatusByBasepath(basepath, "queued");
           } finally {
-            await releaseLock(`lock::${basepath}`);
+            await releaseLock(`${basepath}`);
             console.log(`[queueWatcher] lock released: ${basepath}`);
           }
         } else {
