@@ -34,7 +34,7 @@ export function checkStructure(
         year,
         type: "points",
         dataset: dataset.split(".")[0],
-        dir: folderStructure.slice(0, 4).join("/"),
+        dir: folderStructure.slice(0, 5).join("/"),
       };
     } else if (type.toLowerCase() === "analysis") {
       return {
@@ -42,7 +42,7 @@ export function checkStructure(
         year,
         type: "analysis",
         dataset: dataset.split(".")[0],
-        dir: folderStructure.slice(0, 4).join("/"),
+        dir: folderStructure.slice(0, 5).join("/"),
       };
     } else {
       return null;

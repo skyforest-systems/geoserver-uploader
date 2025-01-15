@@ -42,7 +42,13 @@ export async function fileWatcher(
     }
 
     if (event === "unlink") {
-      const file = await getFile(path);
+      const structure = await checkStructure(path, true);
+
+      if (!structure) {
+        console.log(`[fileWatcher] invalid structure for ${path}`);
+        return;
+      }
+      const file = await getFile(structure?.dir);
 
       await saveFile({ ...file!, status: "removed" });
     }
