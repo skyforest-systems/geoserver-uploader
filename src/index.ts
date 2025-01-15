@@ -2,25 +2,55 @@ import express, { Express, Request, Response } from "express";
 import chokidar from "chokidar";
 import environments from "./environments";
 import { fileWatcher } from "./watcher/fileWatcher";
-import { changeWatcher } from "./watcher/changeWatcher";
 import { queueWatcher } from "./watcher/queueWatcher";
-import countTotalFiles from "./services/countTotalFiles";
+import countTotalFiles from "./utils/countTotalFiles";
 import { geoserverWatcher } from "./watcher/geoserverWatcher";
+import getLocks, {
+  checkFileWatcherLock,
+  releaseAllLocks,
+  removeFile,
+  removeFilesByBasepath,
+  revertProcessingStatusToQueued,
+} from "./repositories/db";
+import removeWatcher from "./watcher/removeWatcher";
 
 const app: Express = express();
 const port = process.env.PORT || 2000;
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello there");
+app.get("/locks", async (req: Request, res: Response) => {
+  res.send(await getLocks());
 });
+
+app.delete(
+  "/files-by-basepath/:basepath(*)",
+  async (req: Request, res: Response) => {
+    try {
+      const { basepath } = req.params;
+      const deletedKeys = await removeFilesByBasepath(basepath);
+      console.log(
+        `[control] DELETE /files-by-basepath/${req.params.basepath}: ${deletedKeys.length} keys deleted`
+      );
+      res.status(200).send(deletedKeys);
+    } catch (error) {
+      console.error(
+        `[control] DELETE /files-by-basepath/${req.params.basepath} failed:`,
+        error
+      );
+      res.status(500).send(error);
+    }
+  }
+);
 
 app.listen(port, async () => {
   console.log(`[control] starting up...`);
 
+  releaseAllLocks();
+  revertProcessingStatusToQueued();
+
   const folderPath = "./files";
   const totalFiles = countTotalFiles(folderPath);
   let processedFiles = 0;
-  let startTime: number | null = null;
+  let startTime = new Date().getTime();
 
   console.log(`[control] found ${totalFiles} files in the folder.`);
 
@@ -39,13 +69,7 @@ app.listen(port, async () => {
   let isChokidarReady = false;
 
   watcher
-    .on("ready", async () => {
-      console.log(
-        "[control] first run done, file watcher is ready for new changes."
-      );
-      isChokidarReady = true;
-    })
-    .on("all", (event, path) => {
+    .on("add", () => {
       if (!isChokidarReady) {
         processedFiles++;
         const elapsedTime = (Date.now() - (startTime || 0)) / 1000; // in seconds
@@ -56,10 +80,21 @@ app.listen(port, async () => {
           : 0;
 
         console.log(
-          `[control] first run rogress: ${processedFiles}/${totalFiles} files processed. ETA: ${eta}s`
+          `[control] first run progress: ${processedFiles}/${totalFiles} (${
+            parseInt(String((processedFiles / totalFiles) * 10000)) / 100
+          }%) files processed. ETA: ${eta}s`
         );
       }
-
+    })
+    .on("ready", async () => {
+      console.log(
+        `[control] first run done in ${
+          (Date.now() - startTime) / 1000
+        }s, file watcher is ready for new changes.`
+      );
+      isChokidarReady = true;
+    })
+    .on("all", async (event, path) => {
       // fileWatcher should be triggered only by add, change, or deletion events
       if (!(event === "add" || event === "change" || event === "unlink"))
         return;
@@ -77,20 +112,22 @@ app.listen(port, async () => {
         )
       )
         return;
-      fileWatcher(event, path, isChokidarReady);
+
+      await fileWatcher(event, path, isChokidarReady);
     });
 
-  if (isChokidarReady) {
-    setInterval(() => {
-      changeWatcher();
-    }, 5000);
+  setInterval(async () => {
+    let isFileWatcherReady = !(await checkFileWatcherLock());
+    isFileWatcherReady && isChokidarReady && queueWatcher();
+  }, 5 * 1000);
 
-    setInterval(() => {
-      queueWatcher();
-    }, 5000);
+  setInterval(async () => {
+    let isFileWatcherReady = !(await checkFileWatcherLock());
+    isFileWatcherReady && isChokidarReady && geoserverWatcher();
+  }, 10 * 60 * 1000);
 
-    setInterval(() => {
-      geoserverWatcher();
-    }, 10000);
-  }
+  setInterval(async () => {
+    let isFileWatcherReady = !(await checkFileWatcherLock());
+    isFileWatcherReady && isChokidarReady && removeWatcher();
+  }, 10 * 1000);
 });

@@ -5,11 +5,12 @@ export function checkStructure(
   fullPath?: boolean
 ): DatasetStructure | null {
   let folderStructure: Array<string>;
-
   if (fullPath) {
-    folderStructure = path.split("/").reverse().slice(0, 5).reverse();
+    folderStructure = (
+      "files/" + path.replace(/\\/g, "/").split("files/")[1]
+    ).split("/");
   } else {
-    folderStructure = path.split("/");
+    folderStructure = path.replace(/\\/g, "/").split("/");
   }
 
   try {
@@ -17,8 +18,6 @@ export function checkStructure(
     const year = folderStructure[2];
     const type = folderStructure[3];
     const dataset = folderStructure[4];
-
-    if (path.includes("_output")) return null; // Skip output files
 
     if (type.toLowerCase() === "raster") {
       return {
@@ -34,7 +33,7 @@ export function checkStructure(
         year,
         type: "points",
         dataset: dataset.split(".")[0],
-        dir: folderStructure.slice(0, 4).join("/"),
+        dir: folderStructure.slice(0, 5).join("/"),
       };
     } else if (type.toLowerCase() === "analysis") {
       return {
@@ -42,13 +41,13 @@ export function checkStructure(
         year,
         type: "analysis",
         dataset: dataset.split(".")[0],
-        dir: folderStructure.slice(0, 4).join("/"),
+        dir: folderStructure.slice(0, 5).join("/"),
       };
     } else {
       return null;
     }
   } catch (error) {
-    console.error(`[check-structure] couldn't parse path:`, path);
+    console.error(`[check-structure] couldn't parse path: ${path}`, error);
     return null;
   }
 }

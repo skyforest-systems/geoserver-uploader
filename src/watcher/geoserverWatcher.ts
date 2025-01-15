@@ -3,10 +3,15 @@ import { getLayersFromWorkspace } from "../services/getLayersFromWorkspace";
 import { getWorkspaces } from "../services/getWorkspaces";
 import { removeWorkspace } from "../services/removeWorkspace";
 
+const LOCK_TTL_FOR_GEOSERVER_WATCHER = 60 * 60; // 1 hour
+
 export async function geoserverWatcher() {
+  const lock = await acquireLock(
+    "geoserverWatcher",
+    LOCK_TTL_FOR_GEOSERVER_WATCHER
+  );
+  if (!lock) return;
   try {
-    const lock = await acquireLock("geoserverWatcher", 1800);
-    if (!lock) return;
     // this controller executes cleanup operations on geoserver
     const workspaces = await getWorkspaces();
 

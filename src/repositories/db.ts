@@ -21,9 +21,26 @@ async function ensureRedisClient() {
   }
 }
 
+export async function checkFileWatcherLock() {
+  try {
+    await ensureRedisClient();
+
+    const keys = await getKeys("lock:::fileWatcher*");
+    if (keys.length > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
 export async function checkIfFileAlreadyExists(path: string) {
   try {
     await ensureRedisClient();
+
+    path = path.replace(/\\/g, "/");
 
     const existsKey = await redisClient.exists("file:::" + path);
 
@@ -41,6 +58,8 @@ export async function getFile(path: string): Promise<FileOnRedis | null> {
   try {
     await ensureRedisClient();
 
+    path = path.replace(/\\/g, "/");
+
     const file = (await redisClient.hGetAll("file:::" + path)) as any;
 
     return file;
@@ -53,6 +72,8 @@ export async function saveFile(file: FileOnRedis) {
   try {
     await ensureRedisClient();
 
+    file.path = file.path.replace(/\\/g, "/");
+
     await redisClient.hSet("file:::" + file.path, {
       ...file,
       ts: new Date().getTime(),
@@ -61,6 +82,36 @@ export async function saveFile(file: FileOnRedis) {
     throw error;
   }
 }
+
+export async function removeFile(path: string) {
+  try {
+    await ensureRedisClient();
+
+    path = path.replace(/\\/g, "/");
+
+    await redisClient.del("file:::" + path);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function removeFilesByBasepath(basepath: string) {
+  try {
+    await ensureRedisClient();
+
+    const pattern = "file:::" + basepath + "/*";
+    const keys = await getKeys(pattern);
+
+    for (const key of keys) {
+      await redisClient.del(key);
+    }
+
+    return keys;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export async function getFilesByStatus(
   status: FileOnRedis["status"]
 ): Promise<FileOnRedis[]> {
@@ -108,16 +159,13 @@ export async function acquireLock(key: string, ttl: number = 600) {
   try {
     await ensureRedisClient();
 
-    const aquired = await redisClient.set(key, "locked", {
+    key = key.replace(/\\/g, "/");
+
+    const aquired = await redisClient.set("lock:::" + key, "locked", {
       NX: true, // Only set if not exists
       EX: ttl, // Set expiry time
     });
-
-    if (!aquired) {
-      return false;
-    } else {
-      return true;
-    }
+    return aquired;
   } catch (error) {
     throw error;
   }
@@ -127,7 +175,40 @@ export async function releaseLock(key: string) {
   try {
     await ensureRedisClient();
 
-    await redisClient.del(key);
+    key = key.replace(/\\/g, "/");
+
+    await redisClient.del("lock:::" + key);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function releaseAllLocks() {
+  try {
+    await ensureRedisClient();
+
+    const keys = await getKeys("lock:::*");
+    for (const key of keys) {
+      await redisClient.del(key);
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function revertProcessingStatusToQueued() {
+  try {
+    await ensureRedisClient();
+
+    // get all keys, check those with the status processing, change those to queued
+
+    const keys = await getKeys("file:::*");
+    for (const key of keys) {
+      const file = await redisClient.hGetAll(key);
+      if (file.status === "processing") {
+        await redisClient.hSet(key, "status", "queued");
+      }
+    }
   } catch (error) {
     throw error;
   }
@@ -140,12 +221,42 @@ export async function changeFileStatusByBasepath(
   try {
     await ensureRedisClient();
 
+    basepath = basepath.replace(/\\/g, "/");
+
     const pattern = "file:::" + basepath + "*";
     const keys = await getKeys(pattern);
 
+    if (keys.length === 0) {
+      console.warn(
+        `[changeFileStatusByBasepath] no files found for ${basepath}`
+      );
+      return;
+    }
     for (const key of keys) {
       await redisClient.hSet(key, "status", status);
     }
+  } catch (error) {
+    throw error;
+  }
+}
+
+export default async function getLocks() {
+  try {
+    const pattern = "lock:::*";
+    const keys = await getKeys(pattern);
+
+    return keys;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function getAllFiles() {
+  try {
+    const pattern = "file:::*";
+    const keys = await getKeys(pattern);
+
+    return keys;
   } catch (error) {
     throw error;
   }

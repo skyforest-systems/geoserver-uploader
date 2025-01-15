@@ -6,12 +6,14 @@ import geoserver from "../repositories/geoserver";
  * @param {string} storeName - The name of the store.
  * @param {string} layerName - The name of the layer.
  * @param {string} styleName - The name of the style to apply.
+ * @param {string} nativeName - The native name of the layer.
  */
 export async function createVectorLayer(
   workspaceName: string,
   storeName: string,
   layerName: string,
-  styleName: string
+  styleName: string,
+  nativeName: string
 ) {
   workspaceName = workspaceName.toLowerCase().replace(/ /g, "_");
   storeName = storeName.toLowerCase().replace(/ /g, "_");
@@ -25,7 +27,7 @@ export async function createVectorLayer(
       {
         featureType: {
           name: layerName,
-          nativeName: "points",
+          nativeName: nativeName,
           title: layerName,
           srs: "EPSG:4326",
           enabled: true,
