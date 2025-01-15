@@ -21,21 +21,20 @@ export async function createStyle(
   styleName: string,
   structure: DatasetStructure
 ) {
-  const { dir } = structure;
+  const { dir, dataset } = structure;
   workspaceName = workspaceName.toLowerCase().replace(/ /g, "_");
   styleName = styleName.toLowerCase().replace(/ /g, "_");
 
+  const sldInput = path.join(dir, `${dataset}.sld`);
+
   try {
     let sldContent;
-    const sldFiles = fs
-      .readdirSync(dir)
-      .filter((file) => file.toLowerCase().endsWith(".sld"));
 
-    if (sldFiles.length > 0) {
-      // Use the first SLD file in the directory
-      const sldFilePath = path.join(dir, sldFiles[0]);
-      console.log(`[GeoServer] Using SLD file: ${sldFilePath}`);
-      sldContent = fs.readFileSync(sldFilePath, "utf-8");
+    // check if the sld file exists, if not, download the default one
+    const sldFile = fs.existsSync(sldInput);
+
+    if (sldFile) {
+      sldContent = fs.readFileSync(sldInput, "utf-8");
     } else {
       // Download the default point SLD from GeoServer
       console.log(

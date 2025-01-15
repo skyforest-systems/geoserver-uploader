@@ -68,7 +68,7 @@ export async function queueWatcher() {
               `[queueWatcher] processing ${structure.type}: ${basepath}`
             );
             await changeFileStatusByBasepath(basepath, "processing");
-            await processDataset(basepath, structure);
+            await processDataset(structure);
             console.log(
               `[queueWatcher] finished processing ${
                 structure.type

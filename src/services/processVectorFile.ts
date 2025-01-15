@@ -24,70 +24,68 @@ const execPromise = promisify(exec);
  */
 export default async function processVector(structure: DatasetStructure) {
   console.log(
-    `[process-vector-service] Processing vector dataset in ${structure.dir}`
+    `[processVectorService] Processing vector dataset in ${structure.dir}`
   );
 
-  const { dir, dataset } = structure;
-  const outputShapefilePath = path.join(dir, "points_output.shp");
+  let { dir, dataset } = structure;
+
+  const basepath = dir.split("/").slice(0, -1).join("/");
+
+  if (dir.endsWith(".sld")) {
+    console.log(
+      `[processVectorService] ${dir} is an style file, reprocessing it's associated dataset`
+    );
+    dir = dir.split(".").slice(0, -1) + ".shp";
+
+    let checkIfFileExists = await fs.existsSync(dir);
+
+    if (!checkIfFileExists) {
+      console.log(
+        `[processVectorService] ${dir} doesn't exist, skipping processing`
+      );
+      return;
+    }
+  }
+
+  const inputShapefilePath = dir;
+  const outputShapefilePath = path.join(basepath, `${dataset}_output.shp`);
 
   try {
-    // Find vector datasets in the directory
-    const vectorFiles = fs
-      .readdirSync(dir)
-      .filter((file) =>
-        environments.pointsExtensions.some((ext) =>
-          file.toLowerCase().endsWith(ext)
-        )
-      )
-      .sort();
+    console.log(
+      `[processVectorService] Checking geometry type in file: ${inputShapefilePath}`
+    );
 
-    if (vectorFiles.length === 0) {
-      throw new Error("No vector files found in the directory.");
-    }
+    const { stdout: layerInfo } = await execPromise(
+      `ogrinfo -so "${inputShapefilePath}"` // Get summary info about the dataset
+    );
 
-    let selectedFilePath = null;
-
-    for (const file of vectorFiles) {
-      const filePath = path.join(dir, file);
+    if (/(Point|MultiPoint)/.test(layerInfo)) {
       console.log(
-        `[process-vector-service] Checking geometry type in file: ${filePath}`
+        `[processVectorService] Geometry type is valid: ${inputShapefilePath}`
       );
-
-      const { stdout: layerInfo } = await execPromise(
-        `ogrinfo -so "${filePath}"` // Get summary info about the dataset
+    } else {
+      console.warn(
+        `[processVectorService] Geometry type is invalid: ${inputShapefilePath}`
       );
-
-      if (/(Point|MultiPoint)/.test(layerInfo)) {
-        selectedFilePath = filePath;
-        console.log(
-          `[process-vector-service] Selected vector file with valid geometry: ${filePath}`
-        );
-        break;
-      }
-    }
-
-    if (!selectedFilePath) {
-      throw new Error(
-        "No vector files with Point or MultiPoint geometries found in the directory."
-      );
+      return;
     }
 
     // Convert to points.shp
     console.log(
-      `[process-vector-service] Converting to Shapefile: ${outputShapefilePath}`
+      `[processVectorService] Converting to Shapefile: ${outputShapefilePath}`
     );
     await execPromise(
-      `ogr2ogr -f "ESRI Shapefile" "${outputShapefilePath}" "${selectedFilePath}" -nlt POINT -overwrite`
+      `ogr2ogr -f "ESRI Shapefile" "${outputShapefilePath}" "${inputShapefilePath}" -nlt POINT -overwrite`
     );
 
     console.log(
-      `[process-vector-service] Finished processing vector dataset in ${dir}`
+      `[processVectorService] Finished processing vector dataset in ${dir}`
     );
 
     return outputShapefilePath;
   } catch (error) {
     console.error(
-      `[process-vector-service] Error processing vector dataset: ${error}`
+      `[processVectorService] Error processing vector dataset: ${error}`
     );
     throw error;
   }
