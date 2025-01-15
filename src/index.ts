@@ -3,7 +3,7 @@ import chokidar from "chokidar";
 import environments from "./environments";
 import { fileWatcher } from "./watcher/fileWatcher";
 import { queueWatcher } from "./watcher/queueWatcher";
-import countTotalFiles from "./services/countTotalFiles";
+import countTotalFiles from "./utils/countTotalFiles";
 import { geoserverWatcher } from "./watcher/geoserverWatcher";
 import getLocks, {
   checkFileWatcherLock,
@@ -113,7 +113,7 @@ app.listen(port, async () => {
       )
         return;
 
-      await fileWatcher(event, path);
+      await fileWatcher(event, path, isChokidarReady);
     });
 
   setInterval(async () => {

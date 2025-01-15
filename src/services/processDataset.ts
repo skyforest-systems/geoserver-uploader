@@ -7,14 +7,22 @@ import { createStore } from "./createStore";
 import { createStyle } from "./createStyle";
 import { createVectorLayer } from "./createVectorLayer";
 import { createWorkspace } from "./createWorkspace";
+import getGeoserverNames from "./getGeoserverNames";
 import processAnalysis from "./processAnalysis";
 import processRaster from "./processRaster";
 import processVector from "./processVectorFile";
 
 export default async function processDataset(structure: DatasetStructure) {
   const now = Date.now();
-  const workspaceName = `${structure.customer}_${structure.year}`;
-  const layerGroupName = `${workspaceName}`;
+
+  const {
+    workspaceName,
+    layerGroupName,
+    storeName,
+    layerName,
+    nativeName,
+    styleName,
+  } = getGeoserverNames(structure);
 
   async function acquireLayerGroupLock(maxRetries = 10): Promise<boolean> {
     let attempts = 0;
@@ -40,18 +48,12 @@ export default async function processDataset(structure: DatasetStructure) {
 
   try {
     if (structure.type === "raster") {
-      const storeName = `${workspaceName}_${structure.dataset}`;
-      const layerName = storeName;
-      const processedRaster = await processRaster(structure);
+      const raster = await processRaster(structure);
 
       await createWorkspace(workspaceName);
-      await createStore(workspaceName, storeName, processedRaster);
+      await createStore(workspaceName, storeName, raster);
       await createLayer(workspaceName, storeName, layerName);
     } else if (structure.type === "points") {
-      const storeName = `${workspaceName}_${structure.dataset}`;
-      const layerName = storeName + "_points";
-      const nativeName = structure.dataset + "_output";
-      const styleName = storeName;
       const points = await processVector(structure);
 
       if (!points) {
@@ -74,8 +76,6 @@ export default async function processDataset(structure: DatasetStructure) {
         nativeName
       );
     } else if (structure.type === "analysis") {
-      const storeName = `${workspaceName}_${structure.dataset}`;
-      const layerName = storeName + "_analysis";
       const analysis = await processAnalysis(structure);
 
       await createWorkspace(workspaceName);

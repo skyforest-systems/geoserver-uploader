@@ -10,7 +10,11 @@ import { hashFile } from "../utils/hashFile";
 
 const LOCK_TTL_FOR_FILE_WATCHER = 60 * 60; // 1 hour
 
-export async function fileWatcher(event: "add" | "change" | "unlink", path: string) {
+export async function fileWatcher(
+  event: "add" | "change" | "unlink",
+  path: string,
+  shouldLog = false
+) {
   async function acquireFileWatcherLock(maxRetries = 10): Promise<boolean> {
     let attempts = 0;
     while (attempts < maxRetries) {
@@ -30,22 +34,29 @@ export async function fileWatcher(event: "add" | "change" | "unlink", path: stri
   const lock = await acquireFileWatcherLock();
 
   if (!lock) {
-    console.log(
+    console.error(
       `[fileWatcher] could no aquire lock for ${path} after 10 attempts`
     );
     return;
   }
 
   try {
-    console.log(`[fileWatcher] ${event} event detected for ${path}`);
+    shouldLog &&
+      console.log(`[fileWatcher] ${event} event detected for ${path}`);
     if (event === "add" || event === "change") {
       let now = new Date().getTime();
+      const structure = await checkStructure(path);
 
+      if (!structure) {
+        console.warn(`[fileWatcher] invalid structure for ${path}`);
+        return;
+      }
+
+      shouldLog &&
+        console.log(`[fileWatcher] checking if file exists: ${path}`);
       const exists = await checkIfFileAlreadyExists(path);
-      console.log(
-        `[fileWatcher] this file already exists in database: ${path}`
-      );
 
+      shouldLog && console.log(`[fileWatcher] hashing file: ${path}`);
       const hash = await hashFile(path);
       if (!hash) {
         console.error(
@@ -55,31 +66,38 @@ export async function fileWatcher(event: "add" | "change" | "unlink", path: stri
         );
         return;
       }
+      shouldLog &&
+        console.log(
+          `[fileWatcher] file ${path} hashed in ${
+            new Date().getTime() - now
+          }ms and ${
+            exists ? "already exists" : "doesn't exist"
+          } at the database`
+        );
 
       if (exists) {
-        console.log(`[fileWatcher] file already exists in database: ${path}`);
+        shouldLog &&
+          console.log(`[fileWatcher] file already exists in database: ${path}`);
         const file = await getFile(path);
 
         if (!file) return;
 
         if (hash === file.hash && file.status === "done") {
-          console.log(
-            `[fileWatcher] file already processed and no changes detected: ${path}`
-          );
+          shouldLog &&
+            console.log(
+              `[fileWatcher] file already processed and no changes detected: ${path}`
+            );
         } else {
-          console.log(
-            `[fileWatcher] file's been updated - updating file status to queued: ${path}`
-          );
+          shouldLog &&
+            console.log(
+              `[fileWatcher] file's been updated - updating file status to queued: ${path}`
+            );
           await saveFile({ ...file, hash, status: "queued" });
         }
       } else {
-        const structure = await checkStructure(path);
-
-        if (!structure) return;
-
         const basepath = structure.dir;
 
-        console.log(`[fileWatcher] saving file: ${path}`);
+        shouldLog && console.log(`[fileWatcher] saving file: ${path}`);
         await saveFile({
           path,
           basepath,
@@ -94,11 +112,12 @@ export async function fileWatcher(event: "add" | "change" | "unlink", path: stri
       const structure = await checkStructure(path, true);
 
       if (!structure) {
-        console.log(`[fileWatcher] invalid structure for ${path}`);
+        shouldLog && console.log(`[fileWatcher] invalid structure for ${path}`);
         return;
       }
       const file = await getFile(path);
-      console.log(`[fileWatcher] updating file status to removed: ${path}`);
+      shouldLog &&
+        console.log(`[fileWatcher] updating file status to removed: ${path}`);
       await saveFile({ ...file!, status: "removed" });
     }
   } catch (error) {
