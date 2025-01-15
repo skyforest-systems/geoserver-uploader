@@ -1,0 +1,103 @@
+services:
+  nginx:
+    hostname: nginx
+    container_name: nginx
+    image: nginx
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ../proxy/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ../proxy/certbot:/etc/letsencrypt  
+      - ../proxy/logs:/var/log/nginx 
+    restart: always
+    networks:
+      - systems
+
+  certbot:
+    container_name: certbot
+    image: certbot/certbot
+    volumes:
+      - ../proxy/certbot:/etc/letsencrypt 
+      - ../proxy/logs:/var/log/nginx 
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do sleep 12h & wait $!; certbot renew; done'"
+    depends_on:
+      - nginx
+    networks:
+      - systems
+
+  uploader:
+    container_name: uploader
+    hostname: uploader
+    image: paschendale/skyforest-geoserver-uploader:latest
+    build: 
+      context: ../
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - GEOSERVER_URL=http://geoserver:8080/geoserver
+      - GEOSERVER_USERNAME=admin
+      - GEOSERVER_PASSWORD=geoserver
+      - RASTER_EXTENSIONS=.jpg,.jpeg
+      - POINTS_EXTENSIONS=.geojson,.shp,.kml,.sld
+      - ANALYSIS_EXTENSIONS=.tif,.geotiff,.tiff
+    restart: always
+    volumes:
+      - ../files:/app/files
+    networks:
+      - systems
+
+  redis:
+    container_name: redis
+    hostname: redis
+    image: redis:7-alpine
+    restart: always
+    networks:
+      - systems
+      
+  redis-insight:
+    container_name: redis-insight
+    hostname: redis-insight
+    image: redis/redisinsight:latest
+    restart: always
+    ports:
+      - "81:5540"
+    volumes:
+      - redis-insight:/data
+    networks:
+      - systems
+  
+  geoserver:
+    container_name: geoserver
+    hostname: geoserver
+    image: docker.osgeo.org/geoserver:2.26.x
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "localhost:8080/geoserver/rest/workspaces"]
+      interval: 10s
+      timeout: 10s
+      retries: 50
+      start_period: 30s
+    volumes:
+      - ../geoserver:/opt/geoserver_data
+      - ../files:/files 
+    networks:
+      - systems
+
+  watchtower:
+    container_name: watchtower
+    hostname: watchtower
+    image: containrrr/watchtower
+    restart: always
+    command: --interval 30
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - systems
+
+volumes:
+  redis-insight:
+
+networks:
+  systems:
+    external:
+      name: systems
