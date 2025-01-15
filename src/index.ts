@@ -8,6 +8,8 @@ import countTotalFiles from "./services/countTotalFiles";
 import { geoserverWatcher } from "./watcher/geoserverWatcher";
 import getLocks, {
   releaseAllLocks,
+  removeFile,
+  removeFilesByBasepath,
   revertProcessingStatusToQueued,
 } from "./repositories/db";
 import removeWatcher from "./watcher/removeWatcher";
@@ -18,6 +20,26 @@ const port = process.env.PORT || 2000;
 app.get("/locks", async (req: Request, res: Response) => {
   res.send(await getLocks());
 });
+
+app.delete(
+  "/files-by-basepath/:basepath(*)",
+  async (req: Request, res: Response) => {
+    try {
+      const { basepath } = req.params;
+      const deletedKeys = await removeFilesByBasepath(basepath);
+      console.log(
+        `[control] DELETE /files-by-basepath/${req.params.basepath}: ${deletedKeys.length} keys deleted`
+      );
+      res.status(200).send(deletedKeys);
+    } catch (error) {
+      console.error(
+        `[control] DELETE /files-by-basepath/${req.params.basepath} failed:`,
+        error
+      );
+      res.status(500).send(error);
+    }
+  }
+);
 
 app.listen(port, async () => {
   console.log(`[control] starting up...`);

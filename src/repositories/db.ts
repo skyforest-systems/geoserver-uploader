@@ -80,6 +80,23 @@ export async function removeFile(path: string) {
   }
 }
 
+export async function removeFilesByBasepath(basepath: string) {
+  try {
+    await ensureRedisClient();
+
+    const pattern = "file:::" + basepath + "/*";
+    const keys = await getKeys(pattern);
+
+    for (const key of keys) {
+      await redisClient.del(key);
+    }
+
+    return keys;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export async function getFilesByStatus(
   status: FileOnRedis["status"]
 ): Promise<FileOnRedis[]> {
