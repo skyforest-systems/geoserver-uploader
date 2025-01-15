@@ -2,11 +2,11 @@ import express, { Express, Request, Response } from "express";
 import chokidar from "chokidar";
 import environments from "./environments";
 import { fileWatcher } from "./watcher/fileWatcher";
-import { changeWatcher } from "./watcher/changeWatcher";
 import { queueWatcher } from "./watcher/queueWatcher";
 import countTotalFiles from "./services/countTotalFiles";
 import { geoserverWatcher } from "./watcher/geoserverWatcher";
 import getLocks, {
+  checkFileWatcherLock,
   releaseAllLocks,
   removeFile,
   removeFilesByBasepath,
@@ -94,7 +94,7 @@ app.listen(port, async () => {
       );
       isChokidarReady = true;
     })
-    .on("all", (event, path) => {
+    .on("all", async (event, path) => {
       // fileWatcher should be triggered only by add, change, or deletion events
       if (!(event === "add" || event === "change" || event === "unlink"))
         return;
@@ -112,22 +112,22 @@ app.listen(port, async () => {
         )
       )
         return;
-      fileWatcher(event, path, isChokidarReady);
+
+      await fileWatcher(event, path);
     });
 
-  setInterval(() => {
-    isChokidarReady && changeWatcher();
+  setInterval(async () => {
+    let isFileWatcherReady = !(await checkFileWatcherLock());
+    isFileWatcherReady && isChokidarReady && queueWatcher();
   }, 5 * 1000);
 
-  setInterval(() => {
-    isChokidarReady && queueWatcher();
-  }, 5 * 1000);
-
-  setInterval(() => {
-    isChokidarReady && geoserverWatcher();
+  setInterval(async () => {
+    let isFileWatcherReady = !(await checkFileWatcherLock());
+    isFileWatcherReady && isChokidarReady && geoserverWatcher();
   }, 10 * 60 * 1000);
 
-  setInterval(() => {
-    isChokidarReady && removeWatcher();
+  setInterval(async () => {
+    let isFileWatcherReady = !(await checkFileWatcherLock());
+    isFileWatcherReady && isChokidarReady && removeWatcher();
   }, 10 * 1000);
 });

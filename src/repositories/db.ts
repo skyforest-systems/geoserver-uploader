@@ -21,6 +21,21 @@ async function ensureRedisClient() {
   }
 }
 
+export async function checkFileWatcherLock() {
+  try {
+    await ensureRedisClient();
+
+    const keys = await getKeys("lock:::fileWatcher*");
+    if (keys.length > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
 export async function checkIfFileAlreadyExists(path: string) {
   try {
     await ensureRedisClient();

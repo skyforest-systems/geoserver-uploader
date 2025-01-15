@@ -5,9 +5,10 @@ export function checkStructure(
   fullPath?: boolean
 ): DatasetStructure | null {
   let folderStructure: Array<string>;
-  console.log(`[checkStructure] path: ${path}`);
   if (fullPath) {
-    folderStructure = path.replace(/\\/g, '/').split("/").reverse().slice(0, 5).reverse();
+    folderStructure = (
+      "files/" + path.replace(/\\/g, "/").split("files/")[1]
+    ).split("/");
   } else {
     folderStructure = path.replace(/\\/g, "/").split("/");
   }
@@ -17,8 +18,6 @@ export function checkStructure(
     const year = folderStructure[2];
     const type = folderStructure[3];
     const dataset = folderStructure[4];
-
-    if (path.includes("_output")) return null; // Skip output files
 
     if (type.toLowerCase() === "raster") {
       return {
