@@ -26,16 +26,7 @@ export default async function processAnalysis(structure: DatasetStructure) {
   const { dir } = structure;
 
   try {
-    // Find all TIF files in the directory
-    const tifFiles = fs
-      .readdirSync(dir)
-      .filter((file) => file.toLowerCase().endsWith(".tif"));
-
-    if (tifFiles.length === 0) {
-      throw new Error("No TIF files found in the directory.");
-    }
-
-    const inputTifPath = path.join(dir, tifFiles[0]);
+    const inputTifPath = dir;
     const outputTifPath = inputTifPath.split(".tif")[0] + "_output.tif"; // Output overwrites the input file
 
     console.log(
