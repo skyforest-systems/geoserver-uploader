@@ -67,6 +67,19 @@ export async function saveFile(file: FileOnRedis) {
     throw error;
   }
 }
+
+export async function removeFile(path: string) {
+  try {
+    await ensureRedisClient();
+
+    path = path.replace(/\\/g, "/");
+
+    await redisClient.del("file:::" + path);
+  } catch (error) {
+    throw error;
+  }
+}
+
 export async function getFilesByStatus(
   status: FileOnRedis["status"]
 ): Promise<FileOnRedis[]> {
@@ -198,6 +211,17 @@ export async function changeFileStatusByBasepath(
 export default async function getLocks() {
   try {
     const pattern = "lock:::*";
+    const keys = await getKeys(pattern);
+
+    return keys;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function getAllFiles() {
+  try {
+    const pattern = "file:::*";
     const keys = await getKeys(pattern);
 
     return keys;

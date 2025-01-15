@@ -5,7 +5,7 @@ export function checkStructure(
   fullPath?: boolean
 ): DatasetStructure | null {
   let folderStructure: Array<string>;
-
+  console.log(`[checkStructure] path: ${path}`);
   if (fullPath) {
     folderStructure = path.replace(/\\/g, '/').split("/").reverse().slice(0, 5).reverse();
   } else {

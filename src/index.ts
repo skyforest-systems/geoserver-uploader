@@ -10,6 +10,7 @@ import getLocks, {
   releaseAllLocks,
   revertProcessingStatusToQueued,
 } from "./repositories/db";
+import removeWatcher from "./watcher/removeWatcher";
 
 const app: Express = express();
 const port = process.env.PORT || 2000;
@@ -103,4 +104,8 @@ app.listen(port, async () => {
   setInterval(() => {
     isChokidarReady && geoserverWatcher();
   }, 10 * 60 * 1000);
+
+  setInterval(() => {
+    isChokidarReady && removeWatcher();
+  }, 10 * 1000);
 });
