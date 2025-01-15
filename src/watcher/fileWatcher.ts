@@ -14,8 +14,6 @@ export async function fileWatcher(
   path: string,
   shouldLog: boolean = false
 ) {
-  const lock = await acquireLock("fileWatcher", LOCK_TTL_FOR_FILE_WATCHER);
-  if (!lock) return;
   try {
     if (event === "add" || event === "change") {
       const exists = await checkIfFileAlreadyExists(path);
@@ -55,6 +53,5 @@ export async function fileWatcher(
   } catch (error) {
     console.error(`[fileWatcher] error:`, error);
   } finally {
-    releaseLock("fileWatcher");
   }
 }
