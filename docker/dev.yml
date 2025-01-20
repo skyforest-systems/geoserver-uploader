@@ -1,0 +1,69 @@
+services:
+  uploader:
+    container_name: uploader
+    hostname: uploader
+    build: 
+      context: ../
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - GEOSERVER_URL=http://geoserver:8080/geoserver
+      - GEOSERVER_USERNAME=admin
+      - GEOSERVER_PASSWORD=geoserver
+      - RASTER_EXTENSIONS=.jpg,.jpeg
+      - POINTS_EXTENSIONS=.geojson,.shp,.kml,.sld
+      - ANALYSIS_EXTENSIONS=.tif,.geotiff,.tiff
+    restart: always
+    volumes:
+      - ../:/app/
+    networks:
+      - skyforest-systems
+
+  redis:
+    container_name: redis
+    hostname: redis
+    image: redis:7-alpine
+    restart: always
+    networks:
+      - skyforest-systems
+    ports:
+      - "6379:6379"
+      
+  redis-insight:
+    container_name: redis-insight
+    hostname: redis-insight
+    image: redis/redisinsight:latest
+    restart: always
+    ports:
+      - "81:5540"
+    volumes:
+      - redis-insight:/data
+    networks:
+      - skyforest-systems
+  
+  geoserver:
+    container_name: geoserver
+    build:
+      context: ../
+      dockerfile: Dockerfile.geoserver
+    hostname: geoserver
+    image: paschendale/skyforest-geoserver:latest
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "localhost:8080/geoserver/rest/workspaces"]
+      interval: 10s
+      timeout: 10s
+      retries: 50
+      start_period: 30s
+    ports:
+      - 8080:8080
+    volumes:
+      - ../geoserver:/opt/geoserver_data
+      - ../files:/files 
+    networks:
+      - skyforest-systems
+
+volumes:
+  redis-insight:
+
+networks:
+  skyforest-systems:

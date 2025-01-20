@@ -1,0 +1,31 @@
+name: "Update infrastructure"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docker/*'
+      - '.github/workflows/iac.yml'
+
+  workflow_dispatch:
+
+jobs:
+  redeploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Get changed files
+        id: files
+        uses: jitterbit/get-changed-files@v1
+        with:
+          format: 'json'
+
+      - name: Webhook call on Portainer
+        env:
+          WEBHOOK_URL: ${{ secrets.PORTAINER_WEBHOOK }}
+        run: |
+          curl -X POST "$WEBHOOK_URL"
