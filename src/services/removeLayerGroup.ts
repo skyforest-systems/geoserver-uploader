@@ -30,6 +30,6 @@ export async function removeLayerGroup(
       );
     }
   } catch (error) {
-    console.error(`[GeoServer] Error removing layer group: ${error}`);
+    console.warn(`[GeoServer] Error removing layer group: ${error}`);
   }
 }

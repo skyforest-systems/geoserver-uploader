@@ -42,8 +42,8 @@ export default async function removeWatcher() {
       const { workspaceName, layerGroupName, layerName } =
         getGeoserverNames(structure);
 
-      await removeLayer(workspaceName, layerName); // if this fails, this function won't block the execution of the code, since the layer group was already deleted and must be recreated
       await removeLayerGroup(workspaceName, layerGroupName);
+      await removeLayer(workspaceName, layerName); // if this fails, this function won't block the execution of the code, since the layer group was already deleted and must be recreated
       await createLayerGroupFromWorkspace(workspaceName, layerGroupName);
 
       if (structure.type === "raster") {

@@ -8,7 +8,7 @@ export async function createLayerGroupFromWorkspace(
 ) {
   const layers = await getLayersFromWorkspace(workspaceName);
 
-  if (layers.length === 0) {
+  if (!layers || layers.length === 0) {
     console.log(
       `[dir-removed-controller] no layers found in workspace ${workspaceName}, no layer group was created`
     );
