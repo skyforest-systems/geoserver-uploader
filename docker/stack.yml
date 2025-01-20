@@ -53,6 +53,8 @@ services:
     restart: always
     networks:
       - skyforest-systems
+    ports:
+      - "6379:6379"
       
   redis-insight:
     container_name: redis-insight

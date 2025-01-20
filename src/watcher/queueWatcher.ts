@@ -9,7 +9,7 @@ import processDataset from "../services/processDataset";
 import { checkStructure } from "../utils/checkStructure";
 import pLimit from "p-limit"; // Ensure you install p-limit: npm install p-limit
 
-const TIME_BETWEEN_CHECKS = 10 * 1000; // 1 minute
+const TIME_BETWEEN_CHECKS = 7 * 1000; // 1 minute
 const LOCK_TTL_FOR_QUEUE_WATCHER = 12 * 60 * 60; // 12 hours
 const LOCK_TTL_FOR_PROCESSING = 60 * 60; // 1 hour
 const MAX_CONCURRENT_TASKS = 10; // Adjust based on system capabilities

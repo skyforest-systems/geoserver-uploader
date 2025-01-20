@@ -11,7 +11,7 @@ export default function getGeoserverNames(structure: DatasetStructure) {
       layerGroupName,
       storeName: `${structure.customer}_${structure.year}_${structure.dataset}`,
       layerName: `${structure.customer}_${structure.year}_${structure.dataset}_points`,
-      nativeName: `${structure.customer}_${structure.year}_${structure.dataset}_output`,
+      nativeName: `${structure.dataset}_output`,
       styleName: `${structure.customer}_${structure.year}_${structure.dataset}`,
     };
   } else if (structure.type === "analysis") {
@@ -20,7 +20,7 @@ export default function getGeoserverNames(structure: DatasetStructure) {
       layerGroupName,
       storeName: `${structure.customer}_${structure.year}_${structure.dataset}`,
       layerName: `${structure.customer}_${structure.year}_${structure.dataset}_analysis`,
-      nativeName: "",
+      nativeName: ``,
       styleName: "",
     };
   } else {

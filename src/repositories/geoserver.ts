@@ -1,5 +1,6 @@
 import axios from "axios";
 import environments from "../environments";
+import curlirize from "axios-curlirize";
 
 const geoserver = axios.create({
   baseURL: environments.geoserverUrl,
@@ -11,5 +12,6 @@ const geoserver = axios.create({
       ).toString("base64"),
   },
 });
+curlirize(geoserver);
 
 export default geoserver;

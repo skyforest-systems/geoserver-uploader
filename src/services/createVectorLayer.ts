@@ -32,19 +32,32 @@ export async function createVectorLayer(
           srs: "EPSG:4326",
           enabled: true,
         },
+      },
+      {
+        headers: {
+          "Content-Type": `application/json`,
+        },
       }
     );
 
     console.log(`[GeoServer] Vector layer created: ${layerName}`);
 
     // Apply the style to the created layer
-    await geoserver.put(`/rest/layers/${workspaceName}:${layerName}`, {
-      layer: {
-        defaultStyle: {
-          name: styleName,
+    await geoserver.put(
+      `/rest/layers/${workspaceName}:${layerName}`,
+      {
+        layer: {
+          defaultStyle: {
+            name: styleName,
+          },
         },
       },
-    });
+      {
+        headers: {
+          "Content-Type": `application/json`,
+        },
+      }
+    );
 
     console.log(
       `[GeoServer] Style applied to vector layer: ${styleName} -> ${layerName}`
