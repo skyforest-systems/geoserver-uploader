@@ -31,6 +31,7 @@ export async function createVectorLayer(
           title: layerName,
           srs: "EPSG:4326",
           enabled: true,
+          advertised: false,
         },
       },
       {

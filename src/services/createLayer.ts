@@ -23,6 +23,7 @@ export async function createLayer(
           title: layerName,
           srs: "EPSG:3006",
           enabled: true,
+          advertised: layerName.includes("_analysis") ? true : false,
         },
       }
     );
