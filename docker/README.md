@@ -12,7 +12,7 @@ docker run --rm \
   -v ../proxy/logs:/var/log/nginx \
   certbot/certbot certonly \
   --webroot -w /var/www/certbot \
-  -d maps.skyforest.se
+  -d map.skyforest.se
 ```
 
 Now, run the Portainer stack:
