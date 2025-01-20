@@ -6,8 +6,8 @@ services:
     ports:
       - 80:80
       - 443:443
-    # volumes:
-    #   - C:/skyforest-uploader/proxy/nginx.conf:/etc/nginx/conf.d/default.conf
+    volumes:
+      - C:/skyforest-uploader/proxy/nginx.conf:/etc/nginx/conf.d/default.conf
     #   - C:/skyforest-uploader/proxy/certbot:/etc/letsencrypt  
     #   - C:/skyforest-uploader/proxy/logs:/var/log/nginx 
     restart: always
