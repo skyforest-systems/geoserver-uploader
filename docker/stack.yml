@@ -12,7 +12,7 @@ services:
       - ../proxy/logs:/var/log/nginx 
     restart: always
     networks:
-      - systems
+      - skyforest-systems
 
   certbot:
     container_name: certbot
@@ -24,7 +24,7 @@ services:
     depends_on:
       - nginx
     networks:
-      - systems
+      - skyforest-systems
 
   uploader:
     container_name: uploader
@@ -44,7 +44,7 @@ services:
     volumes:
       - ../files:/app/files
     networks:
-      - systems
+      - skyforest-systems
 
   redis:
     container_name: redis
@@ -52,7 +52,7 @@ services:
     image: redis:7-alpine
     restart: always
     networks:
-      - systems
+      - skyforest-systems
       
   redis-insight:
     container_name: redis-insight
@@ -64,12 +64,15 @@ services:
     volumes:
       - redis-insight:/data
     networks:
-      - systems
+      - skyforest-systems
   
   geoserver:
     container_name: geoserver
+    build:
+      context: ../
+      dockerfile: Dockerfile.geoserver
     hostname: geoserver
-    image: docker.osgeo.org/geoserver:2.26.x
+    image: paschendale/skyforest-geoserver:latest
     restart: always
     healthcheck:
       test: ["CMD", "curl", "localhost:8080/geoserver/rest/workspaces"]
@@ -77,11 +80,13 @@ services:
       timeout: 10s
       retries: 50
       start_period: 30s
+    ports:
+      - 8080:8080
     volumes:
       - ../geoserver:/opt/geoserver_data
       - ../files:/files 
     networks:
-      - systems
+      - skyforest-systems
 
   watchtower:
     container_name: watchtower
@@ -92,12 +97,12 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - systems
+      - skyforest-systems
 
 volumes:
   redis-insight:
 
 networks:
-  systems:
+  skyforest-systems:
     external:
-      name: systems
+      name: skyforest-systems

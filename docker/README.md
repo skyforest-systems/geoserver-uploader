@@ -1,7 +1,7 @@
 Before starting any container, create the network:
 
 ```bash
-docker network create systems
+docker network create skyforest-systems
 ```
 
 Now, get the initial certificates:

@@ -1,0 +1,20 @@
+FROM docker.osgeo.org/geoserver:2.18.7 AS base
+
+RUN chmod 1777 /tmp
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl 
+
+RUN curl --fail -o /tmp/geoserver-2.18-SNAPSHOT-gsr-plugin.zip https://build.geoserver.org/geoserver/2.18.x/community-latest/geoserver-2.18-SNAPSHOT-gsr-plugin.zip \
+    && unzip -o /tmp/geoserver-2.18-SNAPSHOT-gsr-plugin.zip -d $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/ \
+    && rm /tmp/geoserver-2.18-SNAPSHOT-gsr-plugin.zip \
+    && rm -rf /var/lib/apt/lists/*
+
+ENTRYPOINT ["bash", "/opt/startup.sh"]
+
+WORKDIR /opt
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=1m --timeout=20s --retries=3 \
+  CMD curl --fail --url "$(cat $CATALINA_HOME/conf/healthcheck_url.txt)" || echo 'Healthcheck failed' && exit 1
