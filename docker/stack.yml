@@ -31,7 +31,7 @@ services:
   uploader:
     container_name: uploader
     hostname: uploader
-    image: paschendale/skyforest-geoserver-uploader:latest
+    image: skyforestab/geoserver-uploader:latest
     build: 
       context: ../
     environment:
@@ -78,7 +78,7 @@ services:
       context: ../
       dockerfile: Dockerfile.geoserver
     hostname: geoserver
-    image: paschendale/skyforest-geoserver:latest
+    image: skyforestab/geoserver:latest
     restart: always
     healthcheck:
       test: ["CMD", "curl", "localhost:8080/geoserver/rest/workspaces"]

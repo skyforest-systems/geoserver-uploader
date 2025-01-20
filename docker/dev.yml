@@ -46,7 +46,6 @@ services:
       context: ../
       dockerfile: Dockerfile.geoserver
     hostname: geoserver
-    image: paschendale/skyforest-geoserver:latest
     restart: always
     healthcheck:
       test: ["CMD", "curl", "localhost:8080/geoserver/rest/workspaces"]
