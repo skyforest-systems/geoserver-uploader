@@ -25,7 +25,7 @@ export async function createStyle(
   workspaceName = workspaceName.toLowerCase().replace(/ /g, "_");
   styleName = styleName.toLowerCase().replace(/ /g, "_");
 
-  const sldInput = path.join(dir, `${dataset}.sld`);
+  const sldInput = dir.replace("shp", "sld");
 
   try {
     let sldContent;
