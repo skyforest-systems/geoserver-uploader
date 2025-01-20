@@ -12,7 +12,7 @@ services:
       - ../proxy/logs:/var/log/nginx 
     restart: always
     networks:
-      - skyforest-systems
+      - systems
 
   certbot:
     container_name: certbot
@@ -24,7 +24,7 @@ services:
     depends_on:
       - nginx
     networks:
-      - skyforest-systems
+      - systems
 
   uploader:
     container_name: uploader
@@ -44,7 +44,7 @@ services:
     volumes:
       - D:/GEOSERVER_DATA:/app/files
     networks:
-      - skyforest-systems
+      - systems
 
   redis:
     container_name: redis
@@ -52,7 +52,7 @@ services:
     image: redis:7-alpine
     restart: always
     networks:
-      - skyforest-systems
+      - systems
     ports:
       - "6379:6379"
       
@@ -66,7 +66,7 @@ services:
     volumes:
       - redis-insight:/data
     networks:
-      - skyforest-systems
+      - systems
   
   geoserver:
     container_name: geoserver
@@ -88,7 +88,7 @@ services:
       - ../geoserver:/opt/geoserver_data
       - D:/GEOSERVER_DATA:/files 
     networks:
-      - skyforest-systems
+      - systems
 
   watchtower:
     container_name: watchtower
@@ -99,12 +99,10 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - skyforest-systems
+      - systems
 
 volumes:
   redis-insight:
 
 networks:
-  skyforest-systems:
-    external:
-      name: skyforest-systems
+  systems:
