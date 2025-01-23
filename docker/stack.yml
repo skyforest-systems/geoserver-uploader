@@ -86,6 +86,8 @@ services:
       timeout: 10s
       retries: 50
       start_period: 30s
+    environment:
+      - GEOSERVER_CSRF_WHITELIST=map.skyforest.se,skyforest.se,80.86.77.156:8080
     ports:
       - 8080:8080
     volumes:
