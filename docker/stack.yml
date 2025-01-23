@@ -88,6 +88,7 @@ services:
       start_period: 30s
     environment:
       - GEOSERVER_CSRF_WHITELIST=map.skyforest.se,skyforest.se,80.86.77.156:8080
+      - EXTRA_JAVA_OPTS=-Xms2g -Xmx8g
     ports:
       - 8080:8080
     volumes:
