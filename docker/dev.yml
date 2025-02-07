@@ -92,6 +92,18 @@ services:
     networks:
       - skyforest-systems
 
+  shipyard:
+    image: skyforestab/shipyard:latest
+    container_name: shipyard
+    hostname: shipyard
+    build: 
+      context: ../shipyard
+    env_file: ../shipyard/.env
+    ports:
+      - 3002:3000
+    networks:
+      - skyforest-systems
+
 volumes:
   redis-insight:
 

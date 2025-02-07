@@ -1,13 +1,34 @@
+"use client";
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import Dataset from "@/components/dataset";
 import { ExternalLink } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getWorkspaces } from "../api/getWorkspaces";
+import { useState } from "react";
 
 export default function Dashboard() {
+  const { data } = useQuery({
+    queryKey: ["todos"],
+    queryFn: () => getWorkspaces(),
+  });
+  const [search, setSearch] = useState("");
+
+  let user: string | null = null;
+  let password: string | null = null;
+  if (typeof window !== "undefined") {
+    user = window.localStorage.getItem("username");
+    password = window.localStorage.getItem("password");
+  }
+
+  function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
+    setSearch(e.target.value);
+  }
+
   return (
     <main className="bg-[url(/background.jpg)] bg-cover h-screen w-screen flex flex-col gap-10">
-      <div className="w-[90%] h-screen bg-white rounded-md shadow-md flex flex-col gap-10  p-[15px] ">
+      <div className="w-[80%] h-screen bg-white rounded-md shadow-md flex flex-col gap-4 p-[15px] ">
         <div className="flex flex-row items-center gap-4">
           <Image src={"/logo.png"} alt="logo" width={220} height={220} />
           <Separator orientation="vertical" />
@@ -23,17 +44,35 @@ export default function Dashboard() {
             type="filter"
             id="filter"
             className="bg-[#FFFFFF] w-full rounded-md p-2 text-sm"
+            value={search}
+            onChange={handleSearch}
           />
         </div>
-        <div className="flex flex-row gap-4 w-full flex-wrap">
-          {/* TODO: Replace with dynamic data */}
-          <Dataset title="Dataset 1" stats="10 files" url="https://..." />
-          <Dataset title="Dataset 2" stats="10 files" url="https://..." />
-          <Dataset title="Dataset 3" stats="10 files" url="https://..." />
-          <Dataset title="Dataset 4" stats="10 files" url="https://..." />
-          <Dataset title="Dataset 5" stats="10 files" url="https://..." />
-          <Dataset title="Dataset 6" stats="10 files" url="https://..." />
-          <Dataset title="Dataset 7" stats="10 files" url="https://..." />
+        <div>
+          <p className="mb-2">Click on a dataset to copy the URL</p>
+          {data && (
+            <div className="flex flex-row gap-4 w-full flex-wrap">
+              {data
+                .filter((e) => {
+                  if (search === "") {
+                    return true;
+                  } else {
+                    return (
+                      e.name.toLowerCase().includes(search.toLowerCase()) ||
+                      e.href.toLowerCase().includes(search.toLowerCase())
+                    );
+                  }
+                })
+                .map((e, i) => (
+                  <Dataset
+                    key={i}
+                    title={e.name}
+                    stats="10 files"
+                    url={`https://map.skyforest.se/colossus/${e.name}/gwc/service/wmts?username=${user}&password=${password}`}
+                  />
+                ))}
+            </div>
+          )}
         </div>
         <div className="">
           <Separator orientation="horizontal" />

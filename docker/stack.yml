@@ -109,6 +109,13 @@ services:
     networks:
       - skyforest-systems
 
+  shipyard:
+    image: skyforestab/shipyard:latest
+    container_name: shipyard
+    hostname: shipyard
+    networks:
+      - skyforest-systems
+
   watchtower:
     container_name: watchtower
     hostname: watchtower
