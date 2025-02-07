@@ -61,3 +61,14 @@ jobs:
           file: ./colossus/Dockerfile
           push: true
           tags: skyforestab/colossus:latest
+
+      - name: Build and push Shipyard image
+        if: contains(steps.files.outputs.all, 'shipyard')
+        uses: docker/build-push-action@v5
+        with:
+          context: ./shipyard
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          file: ./shipyard/Dockerfile
+          push: true
+          tags: skyforestab/shipyard:latest

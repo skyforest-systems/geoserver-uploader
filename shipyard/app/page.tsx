@@ -29,8 +29,11 @@ export default function Login() {
     setIsLoading(true);
     try {
       await authenticate(data.username, data.password);
-      localStorage.setItem("username", data.username);
-      localStorage.setItem("password", data.password);
+
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("username", data.username);
+        window.localStorage.setItem("password", data.password);
+      }
       router.push("/dashboard");
     } catch (error) {
       toast({

@@ -15,8 +15,12 @@ export default function Dashboard() {
   });
   const [search, setSearch] = useState("");
 
-  const user = localStorage.getItem("username");
-  const password = localStorage.getItem("password");
+  let user: string | null = null;
+  let password: string | null = null;
+  if (typeof window !== "undefined") {
+    user = window.localStorage.getItem("username");
+    password = window.localStorage.getItem("password");
+  }
 
   function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
     setSearch(e.target.value);
