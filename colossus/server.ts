@@ -29,7 +29,9 @@ app.use("/:geoserverPath(*)", cache, (req: Request, res: Response, next) => {
     res
       .status(401)
       .send(
-        render401(`${GEOSERVER_URL}/${geoserverPath}${originalUrl.search}`)
+        render401(
+          `https://map.skyforest.se/geoserver/${geoserverPath}${originalUrl.search}`
+        )
       );
     return;
   }
