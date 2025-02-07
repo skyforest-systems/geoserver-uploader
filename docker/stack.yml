@@ -96,6 +96,16 @@ services:
       - D:/GEOSERVER_DATA:/files 
     networks:
       - skyforest-systems
+    
+  colossus:
+    image: skyforestab/colossus:latest
+    container_name: colossus
+    hostname: colossus
+    restart: always
+    environment:
+      - PORT=3000
+      - GEOSERVER_URL=http://geoserver:8080/geoserver
+      - BASE_PATH=/colossus
 
   watchtower:
     container_name: watchtower

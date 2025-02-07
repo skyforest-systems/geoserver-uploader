@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'src/*'
+      - 'colossus/*'
       - package.json
       - Dockerfile
       - '.github/workflows/build.yml'
@@ -54,3 +55,14 @@ jobs:
           file: Dockerfile
           push: true
           tags: skyforestab/geoserver:latest
+
+      - name: Build and push Colossus image
+        if: contains(steps.files.outputs.all, 'colossus')
+        uses: docker/build-push-action@v5
+        with:
+          context: ./colossus
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          file: Dockerfile
+          push: true
+          tags: skyforestab/colossus:latest

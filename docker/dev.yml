@@ -1,4 +1,18 @@
 services:
+  nginx:
+    hostname: nginx
+    container_name: nginx
+    image: nginx
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ../proxy/nginx.dev.conf:/etc/nginx/conf.d/default.conf
+      - ../proxy/logs:/var/log/nginx 
+    restart: always
+    networks:
+      - skyforest-systems
+      
   uploader:
     container_name: uploader
     hostname: uploader
@@ -58,6 +72,23 @@ services:
     volumes:
       - ../geoserver:/opt/geoserver_data
       - ../files:/files 
+    networks:
+      - skyforest-systems
+  
+  colossus:
+    image: skyforestab/colossus:latest
+    container_name: colossus
+    build:
+      context: ../colossus
+      dockerfile: Dockerfile
+    hostname: colossus
+    restart: always
+    environment:
+      - PORT=3000
+      - GEOSERVER_URL=https://map.skyforest.se/geoserver
+      - BASE_PATH=/colossus
+    ports:
+      - 3001:3000
     networks:
       - skyforest-systems
 
