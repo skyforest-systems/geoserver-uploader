@@ -32,7 +32,9 @@ export default function Dataset({
         <Copy size={12} />
       </div>
       <p className="font-light text-sm">{stats}</p>
-      <p className="font-light italic text-sm">{url}</p>
+      <p className="font-light italic text-sm text-ellipsis max-w-full truncate">
+        {url}
+      </p>
     </div>
   );
 }

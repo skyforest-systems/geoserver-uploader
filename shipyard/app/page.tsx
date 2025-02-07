@@ -4,6 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { authenticate } from "./api/authenticate";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { LoadingSpinner } from "@/components/spinner";
 
 type FormValues = {
   username: string;
@@ -11,7 +15,9 @@ type FormValues = {
 };
 
 export default function Login() {
+  const { toast } = useToast();
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -19,11 +25,24 @@ export default function Login() {
     formState: { errors },
   } = useForm<FormValues>();
 
-  const onSubmit: SubmitHandler<FormValues> = (data) => {
-    console.log(data);
-
-    router.push("/dashboard");
-    // Handle form submission
+  const onSubmit: SubmitHandler<FormValues> = async (data) => {
+    setIsLoading(true);
+    try {
+      await authenticate(data.username, data.password);
+      localStorage.setItem("username", data.username);
+      localStorage.setItem("password", data.password);
+      router.push("/dashboard");
+    } catch (error) {
+      toast({
+        title: "Login failed",
+        description: "Please check your credentials and try again",
+        duration: 2000,
+        variant: "destructive",
+      });
+      console.error("authenticate >", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -41,7 +60,7 @@ export default function Login() {
           <Input
             type="text"
             id="username"
-            className="bg-[#FFFFFF] w-full rounded-md p-2 text-sm"
+            className={"bg-[#FFFFFF] w-full rounded-md p-2 text-sm"}
             {...register("username", { required: "Client name is required" })}
           />
           {errors.username && (
@@ -55,7 +74,7 @@ export default function Login() {
           <Input
             type="password"
             id="password"
-            className="bg-[#FFFFFF] w-full rounded-md p-2 text-sm"
+            className={"bg-[#FFFFFF] w-full rounded-md p-2 text-sm"}
             {...register("password", { required: "Password is required" })}
           />
           {errors.password && (
@@ -63,7 +82,10 @@ export default function Login() {
               {errors.password.message}
             </span>
           )}
-          <Button type="submit">Login</Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading && <LoadingSpinner className="mr-2" />}
+            {isLoading ? "Loading..." : "Login"}
+          </Button>
         </div>
       </form>
     </main>

@@ -1,10 +1,21 @@
+"use client";
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import Dataset from "@/components/dataset";
 import { ExternalLink } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getWorkspaces } from "../api/getWorkspaces";
 
 export default function Dashboard() {
+  const { data } = useQuery({
+    queryKey: ["todos"],
+    queryFn: () => getWorkspaces(),
+  });
+
+  const user = localStorage.getItem("username");
+  const password = localStorage.getItem("password");
+
   return (
     <main className="bg-[url(/background.jpg)] bg-cover h-screen w-screen flex flex-col gap-10">
       <div className="w-[80%] h-screen bg-white rounded-md shadow-md flex flex-col gap-4 p-[15px] ">
@@ -27,16 +38,18 @@ export default function Dashboard() {
         </div>
         <div>
           <p className="mb-2">Click on a dataset to copy the URL</p>
-          <div className="flex flex-row gap-4 w-full flex-wrap">
-            {/* TODO: Replace with dynamic data */}
-            <Dataset title="Dataset 1" stats="10 files" url="https://..." />
-            <Dataset title="Dataset 2" stats="10 files" url="https://..." />
-            <Dataset title="Dataset 3" stats="10 files" url="https://..." />
-            <Dataset title="Dataset 4" stats="10 files" url="https://..." />
-            <Dataset title="Dataset 5" stats="10 files" url="https://..." />
-            <Dataset title="Dataset 6" stats="10 files" url="https://..." />
-            <Dataset title="Dataset 7" stats="10 files" url="https://..." />
-          </div>
+          {data && (
+            <div className="flex flex-row gap-4 w-full flex-wrap">
+              {data.map((e, i) => (
+                <Dataset
+                  key={i}
+                  title={e.name}
+                  stats="10 files"
+                  url={`https://map.skyforest.se/colossus/${e.name}/gwc/service/wmts?username=${user}&password=${password}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
         <div className="">
           <Separator orientation="horizontal" />
