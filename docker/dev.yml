@@ -17,7 +17,7 @@ services:
     container_name: uploader
     hostname: uploader
     build: 
-      context: ../
+      context: ../uploader
     environment:
       - REDIS_URL=redis://redis:6379
       - GEOSERVER_URL=http://geoserver:8080/geoserver

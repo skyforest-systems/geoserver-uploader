@@ -4,12 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'src/*'
-      - 'colossus/*'
-      - package.json
-      - Dockerfile
-      - '.github/workflows/build.yml'
       
   workflow_dispatch:
 
@@ -36,9 +30,10 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       
       - name: Build and push uploader image
+        if: contains(steps.files.outputs.all, 'uploader')
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./uploader
           cache-from: type=gha
           cache-to: type=gha,mode=max
           file: Dockerfile
