@@ -6,15 +6,21 @@ import Dataset from "@/components/dataset";
 import { ExternalLink } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getWorkspaces } from "../api/getWorkspaces";
+import { useState } from "react";
 
 export default function Dashboard() {
   const { data } = useQuery({
     queryKey: ["todos"],
     queryFn: () => getWorkspaces(),
   });
+  const [search, setSearch] = useState("");
 
   const user = localStorage.getItem("username");
   const password = localStorage.getItem("password");
+
+  function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
+    setSearch(e.target.value);
+  }
 
   return (
     <main className="bg-[url(/background.jpg)] bg-cover h-screen w-screen flex flex-col gap-10">
@@ -34,20 +40,33 @@ export default function Dashboard() {
             type="filter"
             id="filter"
             className="bg-[#FFFFFF] w-full rounded-md p-2 text-sm"
+            value={search}
+            onChange={handleSearch}
           />
         </div>
         <div>
           <p className="mb-2">Click on a dataset to copy the URL</p>
           {data && (
             <div className="flex flex-row gap-4 w-full flex-wrap">
-              {data.map((e, i) => (
-                <Dataset
-                  key={i}
-                  title={e.name}
-                  stats="10 files"
-                  url={`https://map.skyforest.se/colossus/${e.name}/gwc/service/wmts?username=${user}&password=${password}`}
-                />
-              ))}
+              {data
+                .filter((e) => {
+                  if (search === "") {
+                    return true;
+                  } else {
+                    return (
+                      e.name.toLowerCase().includes(search.toLowerCase()) ||
+                      e.href.toLowerCase().includes(search.toLowerCase())
+                    );
+                  }
+                })
+                .map((e, i) => (
+                  <Dataset
+                    key={i}
+                    title={e.name}
+                    stats="10 files"
+                    url={`https://map.skyforest.se/colossus/${e.name}/gwc/service/wmts?username=${user}&password=${password}`}
+                  />
+                ))}
             </div>
           )}
         </div>
