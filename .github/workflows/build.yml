@@ -36,7 +36,7 @@ jobs:
           context: ./uploader
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          file: Dockerfile
+          file: ./uploader/Dockerfile
           push: true
           tags: skyforestab/geoserver-uploader:latest
 
@@ -47,7 +47,7 @@ jobs:
           context: .
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          file: Dockerfile
+          file: Dockerfile.geoserver
           push: true
           tags: skyforestab/geoserver:latest
 
@@ -58,6 +58,6 @@ jobs:
           context: ./colossus
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          file: Dockerfile
+          file: ./colossus/Dockerfile
           push: true
           tags: skyforestab/colossus:latest
