@@ -16,10 +16,10 @@ export default function Dashboard() {
   const [search, setSearch] = useState("");
 
   let user: string | null = null;
-  let password: string | null = null;
+  // let password: string | null = null;
   if (typeof window !== "undefined") {
     user = window.localStorage.getItem("username");
-    password = window.localStorage.getItem("password");
+    // password = window.localStorage.getItem("password");
   }
 
   function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
