@@ -33,7 +33,7 @@ export default function Dashboard() {
           <Image src={"/logo.png"} alt="logo" width={220} height={220} />
           <Separator orientation="vertical" />
           <p className="text-lg">
-            Welcome, <b>John Doe</b>
+            Welcome, <b>{user}</b>
           </p>
         </div>
 

@@ -113,6 +113,10 @@ services:
     image: skyforestab/shipyard:latest
     container_name: shipyard
     hostname: shipyard
+    environment:
+      - GEOSERVER_USER=skyforest
+      - GEOSERVER_PASSWORD=3edXBMqGZr4yGUi
+      - GEOSERVER_URL=http://geoserver:8080/geoserver
     networks:
       - skyforest-systems
 
