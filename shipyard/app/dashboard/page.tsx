@@ -68,7 +68,8 @@ export default function Dashboard() {
                     key={i}
                     title={e.name}
                     stats="10 files"
-                    url={`https://map.skyforest.se/colossus/${e.name}/gwc/service/wmts?username=${user}&password=${password}`}
+                    geoserverUrl={`https://map.skyforest.se/geoserver/${e.name}/gwc/service/wmts`}
+                    colossusUrl={`https://map.skyforest.se/colossus/${e.name}/gwc/service/wmts`}
                   />
                 ))}
             </div>
