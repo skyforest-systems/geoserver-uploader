@@ -61,6 +61,7 @@ export default function Dataset({
             {colossusUrl}
           </p>
         </div>
+        <Copy size={12} />
       </div>
     </div>
   );
