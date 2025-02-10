@@ -50,7 +50,7 @@ export default function Login() {
 
   return (
     <main className="bg-[linear-gradient(to_top,rgba(0,0,0,0.5),rgba(0,0,0,0.1)),url(/background.jpg)] bg-cover h-screen w-screen flex flex-col align-middle justify-center items-center gap-10">
-      <Image src={"/logo.png"} alt="logo" width={220} height={220} />
+      <Image src={"/logo_negative.png"} alt="logo" width={220} height={220} />
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="bg-[#FFFFFF] w-[270px] min-h-10 rounded-md shadow-sm p-[15px] flex flex-col gap-[12px] justify-center">
           <p>
