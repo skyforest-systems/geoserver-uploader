@@ -1,4 +1,4 @@
-export interface DatasetStructure {
+export interface RasterDatasetStructure {
   customer: string;
   year: string;
   type: "points" | "raster" | "analysis";
@@ -7,7 +7,7 @@ export interface DatasetStructure {
 }
 
 export type DatasetQueueItem = {
-  structure: DatasetStructure;
+  structure: RasterDatasetStructure;
   hash: string;
 };
 

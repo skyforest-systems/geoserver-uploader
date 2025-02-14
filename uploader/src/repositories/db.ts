@@ -1,5 +1,9 @@
 import { createClient } from "redis";
-import { DatasetQueueItem, DatasetStructure, FileOnRedis } from "../interfaces";
+import {
+  DatasetQueueItem,
+  RasterDatasetStructure,
+  FileOnRedis,
+} from "../interfaces";
 import environments from "../environments";
 
 // Create a single Redis client instance and reuse it
@@ -21,11 +25,11 @@ async function ensureRedisClient() {
   }
 }
 
-export async function checkFileWatcherLock() {
+export async function checkRasterWatcherLock() {
   try {
     await ensureRedisClient();
 
-    const keys = await getKeys("lock:::fileWatcher*");
+    const keys = await getKeys("lock:::rasterWatcher*");
     if (keys.length > 0) {
       return true;
     } else {

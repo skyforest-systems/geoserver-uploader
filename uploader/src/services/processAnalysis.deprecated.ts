@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { exec } from "child_process";
 import { promisify } from "util";
-import { DatasetStructure } from "../interfaces";
+import { RasterDatasetStructure } from "../interfaces";
 
 const execPromise = promisify(exec);
 
@@ -11,14 +11,16 @@ const execPromise = promisify(exec);
  * Standardizes the TIF to EPSG:3006, applies compression, creates tiles,
  * and generates pyramids (overviews). If multiple TIF files are found, the function ignores them.
  *
- * @param {DatasetStructure} structure - The dataset structure containing directory information.
+ * @param {RasterDatasetStructure} structure - The dataset structure containing directory information.
  * @param {string} structure.dir - The directory where the TIF file is located.
  *
  * @throws {Error} If no TIF files or more than one TIF file are found in the directory, or if processing fails.
  *
  * @returns {Promise<string>} The path of the processed TIF file.
  */
-export default async function processAnalysis(structure: DatasetStructure) {
+export default async function processAnalysis(
+  structure: RasterDatasetStructure
+) {
   console.log(
     `[process-analysis-service] Processing analysis TIF in ${structure.dir}`
   );

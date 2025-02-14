@@ -1,4 +1,4 @@
-import { DatasetStructure } from "../interfaces";
+import { RasterDatasetStructure } from "../interfaces";
 import { acquireLock, releaseLock } from "../repositories/db";
 import { createLayer } from "./createLayer";
 import { createLayerGroupFromWorkspace } from "./createLayerGroupFromWorkspace";
@@ -8,11 +8,13 @@ import { createStyle } from "./createStyle";
 import { createVectorLayer } from "./createVectorLayer";
 import { createWorkspace } from "./createWorkspace";
 import getGeoserverNames from "./getGeoserverNames";
-import processAnalysis from "./processAnalysis";
+import processAnalysis from "./processAnalysis.deprecated";
 import processRaster from "./processRaster";
-import processVector from "./processVectorFile";
+import processVector from "./processVectorFile.deprecated";
 
-export default async function processDataset(structure: DatasetStructure) {
+export default async function processRasterDataset(
+  structure: RasterDatasetStructure
+) {
   const now = Date.now();
 
   const {
@@ -41,7 +43,7 @@ export default async function processDataset(structure: DatasetStructure) {
 
   if (!layerGroupLock) {
     console.error(
-      `[processDataset] Could not acquire lock for layer group: ${layerGroupName}`
+      `[processRasterDataset] Could not acquire lock for layer group: ${layerGroupName}`
     );
     return;
   }
@@ -58,7 +60,7 @@ export default async function processDataset(structure: DatasetStructure) {
 
       if (!points) {
         console.log(
-          `[processDataset] ${
+          `[processRasterDataset] ${
             structure.dir + `/` + structure.dataset
           } is not a points dataset`
         );

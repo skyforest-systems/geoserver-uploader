@@ -5,7 +5,7 @@ import {
   getFilesByStatus,
   releaseLock,
 } from "../repositories/db";
-import processDataset from "../services/processDataset";
+import processRasterDataset from "../services/processRasterDataset";
 import { checkStructure } from "../utils/checkStructure";
 import pLimit from "p-limit"; // Ensure you install p-limit: npm install p-limit
 
@@ -68,7 +68,7 @@ export async function queueWatcher() {
               `[queueWatcher] processing ${structure.type}: ${basepath}`
             );
             await changeFileStatusByBasepath(basepath, "processing");
-            await processDataset(structure);
+            await processRasterDataset(structure);
             console.log(
               `[queueWatcher] finished processing ${
                 structure.type

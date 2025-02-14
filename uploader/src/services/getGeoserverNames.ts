@@ -1,7 +1,6 @@
-import { DatasetStructure } from "../interfaces";
+import { RasterDatasetStructure } from "../interfaces";
 
-export default function getGeoserverNames(structure: DatasetStructure) {
-
+export default function getGeoserverNames(structure: RasterDatasetStructure) {
   const workspaceName = `${structure.customer}_${structure.year}`;
   const layerGroupName = `${structure.customer}_${structure.year}`;
 
@@ -32,5 +31,5 @@ export default function getGeoserverNames(structure: DatasetStructure) {
       nativeName: "",
       styleName: "",
     };
-  } 
+  }
 }

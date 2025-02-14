@@ -1,9 +1,9 @@
-import { DatasetStructure } from "../interfaces";
+import { RasterDatasetStructure } from "../interfaces";
 
 export function checkStructure(
   path: string,
   fullPath?: boolean
-): DatasetStructure | null {
+): RasterDatasetStructure | null {
   let folderStructure: Array<string>;
   if (fullPath) {
     folderStructure = (
@@ -13,11 +13,29 @@ export function checkStructure(
     folderStructure = path.replace(/\\/g, "/").split("/");
   }
 
+  const indexOfRaster = folderStructure
+    .map((e) => e.toLowerCase())
+    .indexOf("raster");
+  const indexOfPoints = folderStructure
+    .map((e) => e.toLowerCase())
+    .indexOf("points");
+  const indexOfAnalysis = folderStructure
+    .map((e) => e.toLowerCase())
+    .indexOf("analysis");
+
+  const typeIndex = [indexOfRaster, indexOfPoints, indexOfAnalysis].find(
+    (e) => e !== -1
+  );
+
+  if (!typeIndex || typeIndex === -1) {
+    return null;
+  }
+
   try {
-    const customer = folderStructure[1];
-    const year = folderStructure[2];
-    const type = folderStructure[3];
-    const dataset = folderStructure[4];
+    const customer = folderStructure[typeIndex - 2];
+    const year = folderStructure[typeIndex - 1];
+    const type = folderStructure[typeIndex];
+    const dataset = folderStructure[typeIndex + 1];
 
     if (type.toLowerCase() === "raster") {
       return {
@@ -27,25 +45,9 @@ export function checkStructure(
         dataset,
         dir: folderStructure.slice(0, 5).join("/"),
       };
-    } else if (type.toLowerCase() === "points") {
-      return {
-        customer,
-        year,
-        type: "points",
-        dataset: dataset.split(".")[0],
-        dir: folderStructure.slice(0, 5).join("/"),
-      };
-    } else if (type.toLowerCase() === "analysis") {
-      return {
-        customer,
-        year,
-        type: "analysis",
-        dataset: dataset.split(".")[0],
-        dir: folderStructure.slice(0, 5).join("/"),
-      };
-    } else {
-      return null;
     }
+
+    return null;
   } catch (error) {
     console.error(`[check-structure] couldn't parse path: ${path}`, error);
     return null;

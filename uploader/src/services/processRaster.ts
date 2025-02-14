@@ -2,11 +2,11 @@ import fs from "fs";
 import path from "path";
 import { exec } from "child_process";
 import { promisify } from "util";
-import { DatasetStructure } from "../interfaces";
+import { RasterDatasetStructure } from "../interfaces";
 
 const execPromise = promisify(exec);
 
-export default async function processRaster(structure: DatasetStructure) {
+export default async function processRaster(structure: RasterDatasetStructure) {
   console.log(
     `[process-raster-service] processing raster dataset in ${structure.dir}`
   );

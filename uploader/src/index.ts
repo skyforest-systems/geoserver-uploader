@@ -1,12 +1,12 @@
 import express, { Express, Request, Response } from "express";
 import chokidar from "chokidar";
 import environments from "./environments";
-import { fileWatcher } from "./watcher/fileWatcher";
+import { rasterWatcher } from "./watcher/rasterWatcher";
 import { queueWatcher } from "./watcher/queueWatcher";
 import countTotalFiles from "./utils/countTotalFiles";
 import { geoserverWatcher } from "./watcher/geoserverWatcher";
 import getLocks, {
-  checkFileWatcherLock,
+  checkRasterWatcherLock,
   releaseAllLocks,
   removeFile,
   removeFilesByBasepath,
@@ -95,7 +95,7 @@ app.listen(port, async () => {
       isChokidarReady = true;
     })
     .on("all", async (event, path) => {
-      // fileWatcher should be triggered only by add, change, or deletion events
+      // rasterWatcher should be triggered only by add, change, or deletion events
       if (!(event === "add" || event === "change" || event === "unlink"))
         return;
 
@@ -113,21 +113,22 @@ app.listen(port, async () => {
       )
         return;
 
-      await fileWatcher(event, path, isChokidarReady);
+      if (path.includes("raster"))
+        await rasterWatcher(event, path, isChokidarReady);
     });
 
   setInterval(async () => {
-    let isFileWatcherReady = !(await checkFileWatcherLock());
-    isFileWatcherReady && isChokidarReady && queueWatcher();
+    let israsterWatcherReady = !(await checkRasterWatcherLock());
+    israsterWatcherReady && isChokidarReady && queueWatcher();
   }, 5 * 1000);
 
   setInterval(async () => {
-    let isFileWatcherReady = !(await checkFileWatcherLock());
-    isFileWatcherReady && isChokidarReady && geoserverWatcher();
+    let israsterWatcherReady = !(await checkRasterWatcherLock());
+    israsterWatcherReady && isChokidarReady && geoserverWatcher();
   }, 10 * 60 * 1000);
 
   setInterval(async () => {
-    let isFileWatcherReady = !(await checkFileWatcherLock());
-    isFileWatcherReady && isChokidarReady && removeWatcher();
+    let israsterWatcherReady = !(await checkRasterWatcherLock());
+    israsterWatcherReady && isChokidarReady && removeWatcher();
   }, 10 * 1000);
 });
