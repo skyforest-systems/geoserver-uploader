@@ -1,4 +1,4 @@
-import { RasterDatasetStructure } from "../interfaces";
+import { DatasetStructure } from "../interfaces";
 import { acquireLock, releaseLock } from "../repositories/db";
 import { createLayer } from "./createLayer";
 import { createLayerGroupFromWorkspace } from "./createLayerGroupFromWorkspace";
@@ -7,9 +7,7 @@ import { createWorkspace } from "./createWorkspace";
 import getGeoserverNames from "./getGeoserverNames";
 import processRaster from "./processRaster";
 
-export default async function processRasterDataset(
-  structure: RasterDatasetStructure
-) {
+export default async function processRasterDataset(structure: DatasetStructure) {
   const now = Date.now();
 
   const { workspaceName, layerGroupName, storeName, layerName } =

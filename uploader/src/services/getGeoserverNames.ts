@@ -1,6 +1,6 @@
-import { RasterDatasetStructure } from "../interfaces";
+import { DatasetStructure } from "../interfaces";
 
-export default function getGeoserverNames(structure: RasterDatasetStructure) {
+export default function getGeoserverNames(structure: DatasetStructure) {
   const workspaceName = `${structure.customer}_${structure.year}`;
   const layerGroupName = `${structure.customer}_${structure.year}`;
 

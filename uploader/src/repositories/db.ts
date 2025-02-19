@@ -1,9 +1,5 @@
 import { createClient } from "redis";
-import {
-  DatasetQueueItem,
-  RasterDatasetStructure,
-  FileOnRedis,
-} from "../interfaces";
+import { DatasetQueueItem, DatasetStructure, FileOnRedis } from "../interfaces";
 import environments from "../environments";
 
 // Create a single Redis client instance and reuse it

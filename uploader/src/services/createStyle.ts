@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import geoserver from "../repositories/geoserver";
-import { RasterDatasetStructure } from "../interfaces";
+import { DatasetStructure } from "../interfaces";
 
 /**
  * Creates or updates a style in GeoServer based on an SLD file located in the specified directory.
@@ -9,7 +9,7 @@ import { RasterDatasetStructure } from "../interfaces";
  *
  * @param {string} workspaceName - The name of the workspace in GeoServer.
  * @param {string} styleName - The name of the style to create or update.
- * @param {RasterDatasetStructure} structure - The dataset structure containing directory information.
+ * @param {DatasetStructure} structure - The dataset structure containing directory information.
  * @param {string} structure.dir - The directory where the SLD file might be located.
  *
  * @throws {Error} If unable to create or update the style in GeoServer.
@@ -19,7 +19,7 @@ import { RasterDatasetStructure } from "../interfaces";
 export async function createStyle(
   workspaceName: string,
   styleName: string,
-  structure: RasterDatasetStructure
+  structure: DatasetStructure
 ) {
   const { dir, dataset } = structure;
   workspaceName = workspaceName.toLowerCase().replace(/ /g, "_");

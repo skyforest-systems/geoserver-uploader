@@ -1,13 +1,24 @@
-export interface RasterDatasetStructure {
+export interface DatasetStructure {
+  /** Customer name, indicates the first part of the workspace. Eg: customer_2024 */
   customer: string;
+  /** Year of the dataset, indicates the second part of the workspace. Eg: skyforest_year */
   year: string;
-  type: "points" | "raster" | "analysis";
+  /** Type of the dataset, can be points, raster, analysis or styles */
+  type: "points" | "raster" | "analysis" | "styles";
+  /** Name of the dataset, it can be a folder name, if raster, or a file name, if else */
   dataset: string;
+  /** Path where the dataset is located
+   *
+   * For rasters, it's the directory where the raster tiles are located inside the raster/ folder
+   * For points, it's the file name of the points file inside the points/ folder, minus the extension
+   * For analysis, it's the file name of the analysis file inside the analysis/ folder
+   * For styles, it's the file name of the SLD file inside the styles/points/ or styles/analysis/ folder
+   */
   dir: string;
 }
 
 export type DatasetQueueItem = {
-  structure: RasterDatasetStructure;
+  structure: DatasetStructure;
   hash: string;
 };
 

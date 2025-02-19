@@ -1,4 +1,4 @@
-import { RasterDatasetStructure } from "../interfaces";
+import { DatasetStructure } from "../interfaces";
 import { acquireLock, releaseLock } from "../repositories/db";
 import { createLayer } from "./createLayer";
 import { createLayerGroupFromWorkspace } from "./createLayerGroupFromWorkspace";
@@ -12,9 +12,7 @@ import processAnalysis from "./processAnalysis.deprecated";
 import processRaster from "./processRaster";
 import processVector from "./processVectorFile.deprecated";
 
-export default async function processRasterDataset(
-  structure: RasterDatasetStructure
-) {
+export default async function processRasterDataset(structure: DatasetStructure) {
   const now = Date.now();
 
   const {

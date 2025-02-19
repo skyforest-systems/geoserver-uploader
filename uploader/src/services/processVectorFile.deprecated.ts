@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { exec } from "child_process";
 import { promisify } from "util";
-import { RasterDatasetStructure } from "../interfaces";
+import { DatasetStructure } from "../interfaces";
 import environments from "../environments";
 
 const execPromise = promisify(exec);
@@ -14,7 +14,7 @@ const execPromise = promisify(exec);
  * It verifies the geometry type of each file, selecting the first one with `Point` or `MultiPoint` geometry.
  * The selected file is converted to a Shapefile (`points.shp`) using the `ogr2ogr` utility.
  *
- * @param {RasterDatasetStructure} structure - The dataset structure containing metadata and directory information.
+ * @param {DatasetStructure} structure - The dataset structure containing metadata and directory information.
  * @param {string} structure.dir - The directory where vector files are located.
  * @param {string} structure.dataset - The name of the dataset.
  *
@@ -22,7 +22,7 @@ const execPromise = promisify(exec);
  *
  * @returns {Promise<string>} The path to the generated `points.shp` file.
  */
-export default async function processVector(structure: RasterDatasetStructure) {
+export default async function processVector(structure: DatasetStructure) {
   console.log(
     `[processVectorService] Processing vector dataset in ${structure.dir}`
   );
