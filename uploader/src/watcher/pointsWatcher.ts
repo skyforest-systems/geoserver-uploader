@@ -10,16 +10,16 @@ import { hashFile } from "../utils/hashFile";
 
 const LOCK_TTL_FOR_FILE_WATCHER = 60 * 60; // 1 hour
 
-export async function rasterWatcher(
+export async function pointsWatcher(
   event: "add" | "change" | "unlink",
   path: string,
   shouldLog = false
 ) {
-  async function acquirerasterWatcherLock(maxRetries = 10): Promise<boolean> {
+  async function acquirePointsWatcherLock(maxRetries = 10): Promise<boolean> {
     let attempts = 0;
     while (attempts < maxRetries) {
       const lock = await acquireLock(
-        "rasterWatcher::" + path,
+        "pointsWatcher::" + path,
         LOCK_TTL_FOR_FILE_WATCHER
       );
       if (lock) return true;
@@ -31,36 +31,38 @@ export async function rasterWatcher(
     return false;
   }
 
-  const lock = await acquirerasterWatcherLock();
+  const lock = await acquirePointsWatcherLock();
 
   if (!lock) {
     console.error(
-      `[rasterWatcher] could no aquire lock for ${path} after 10 attempts`
+      `[pointsWatcher] could no aquire lock for ${path} after 10 attempts`
     );
     return;
   }
 
   try {
     shouldLog &&
-      console.log(`[rasterWatcher] ${event} event detected for ${path}`);
+      console.log(`[pointsWatcher] ${event} event detected for ${path}`);
     if (event === "add" || event === "change") {
       let now = new Date().getTime();
+
       const structure = await checkStructure(path);
 
       if (!structure) {
-        console.warn(`[rasterWatcher] invalid structure for ${path}`);
+        console.warn(`[pointsWatcher] invalid structure for ${path}`);
+
         return;
       }
 
       shouldLog &&
-        console.log(`[rasterWatcher] checking if file exists: ${path}`);
+        console.log(`[pointsWatcher] checking if file exists: ${path}`);
       const exists = await checkIfFileAlreadyExists(path);
 
-      shouldLog && console.log(`[rasterWatcher] hashing file: ${path}`);
+      shouldLog && console.log(`[pointsWatcher] hashing file: ${path}`);
       const hash = await hashFile(path);
       if (!hash) {
         console.error(
-          `[rasterWatcher] couldn't hash file: ${path} (that took ${
+          `[pointsWatcher] couldn't hash file: ${path} (that took ${
             new Date().getTime() - now
           }ms)`
         );
@@ -68,7 +70,7 @@ export async function rasterWatcher(
       }
       shouldLog &&
         console.log(
-          `[rasterWatcher] file ${path} hashed in ${
+          `[pointsWatcher] file ${path} hashed in ${
             new Date().getTime() - now
           }ms and ${
             exists ? "already exists" : "doesn't exist"
@@ -78,7 +80,7 @@ export async function rasterWatcher(
       if (exists) {
         shouldLog &&
           console.log(
-            `[rasterWatcher] file already exists in database: ${path}`
+            `[pointsWatcher] file already exists in database: ${path}`
           );
         const file = await getFile(path);
 
@@ -87,19 +89,19 @@ export async function rasterWatcher(
         if (hash === file.hash && file.status === "done") {
           shouldLog &&
             console.log(
-              `[rasterWatcher] file already processed and no changes detected: ${path}`
+              `[pointsWatcher] file already processed and no changes detected: ${path}`
             );
         } else {
           shouldLog &&
             console.log(
-              `[rasterWatcher] file's been updated - updating file status to queued: ${path}`
+              `[pointsWatcher] file's been updated - updating file status to queued: ${path}`
             );
           await saveFile({ ...file, hash, status: "queued" });
         }
       } else {
         const basepath = structure.dir;
 
-        shouldLog && console.log(`[rasterWatcher] saving file: ${path}`);
+        shouldLog && console.log(`[pointsWatcher] saving file: ${path}`);
         await saveFile({
           path,
           basepath,
@@ -116,17 +118,19 @@ export async function rasterWatcher(
 
       if (!structure) {
         shouldLog &&
-          console.log(`[rasterWatcher] invalid structure for ${path}`);
+          console.log(
+            `[pointsWatcher] invalid structure for ${path}, file ignored`
+          );
         return;
       }
       const file = await getFile(path);
       shouldLog &&
-        console.log(`[rasterWatcher] updating file status to removed: ${path}`);
+        console.log(`[pointsWatcher] updating file status to removed: ${path}`);
       await saveFile({ ...file!, status: "removed" });
     }
   } catch (error) {
-    console.error(`[rasterWatcher] error:`, error);
+    console.error(`[pointsWatcher] error:`, error);
   } finally {
-    releaseLock("rasterWatcher::" + path);
+    releaseLock("pointsWatcher::" + path);
   }
 }

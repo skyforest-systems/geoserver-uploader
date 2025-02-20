@@ -31,23 +31,7 @@ export default async function processVector(structure: DatasetStructure) {
 
   const basepath = dir.split("/").slice(0, -1).join("/");
 
-  if (dir.endsWith(".sld")) {
-    console.log(
-      `[processVectorService] ${dir} is an style file, reprocessing it's associated dataset`
-    );
-    dir = dir.split(".").slice(0, -1) + ".shp";
-
-    let checkIfFileExists = await fs.existsSync(dir);
-
-    if (!checkIfFileExists) {
-      console.log(
-        `[processVectorService] ${dir} doesn't exist, skipping processing`
-      );
-      return;
-    }
-  }
-
-  const inputShapefilePath = dir;
+  const inputShapefilePath = dir + ".shp";
   const outputShapefilePath = path.join(basepath, `${dataset}_output.shp`);
 
   try {

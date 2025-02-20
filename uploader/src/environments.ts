@@ -13,11 +13,15 @@ const EnvSchema = z.object({
   POINTS_EXTENSIONS: z
     .string()
     .transform((val) => val.split(","))
-    .default(".geojson,.shp,.kml,.sld"),
+    .default(".shp,.shx,.prj"),
   ANALYSIS_EXTENSIONS: z
     .string()
     .transform((val) => val.split(","))
     .default(".tif,.geotiff,.tiff"),
+  STYLES_EXTENSIONS: z
+    .string()
+    .transform((val) => val.split(","))
+    .default(".sld"),
 });
 
 // Parse and validate the environment variables
@@ -32,9 +36,10 @@ const environments = {
   rasterExtensions: parsedEnv.RASTER_EXTENSIONS,
   pointsExtensions: parsedEnv.POINTS_EXTENSIONS,
   analysisExtensions: parsedEnv.ANALYSIS_EXTENSIONS,
-  extensions: parsedEnv.RASTER_EXTENSIONS.concat(
-    parsedEnv.POINTS_EXTENSIONS
-  ).concat(parsedEnv.ANALYSIS_EXTENSIONS),
+  stylesExtensions: parsedEnv.STYLES_EXTENSIONS,
+  extensions: parsedEnv.RASTER_EXTENSIONS.concat(parsedEnv.POINTS_EXTENSIONS)
+    .concat(parsedEnv.ANALYSIS_EXTENSIONS)
+    .concat(parsedEnv.STYLES_EXTENSIONS),
 };
 
 export default environments;

@@ -77,6 +77,7 @@ export async function saveFile(file: FileOnRedis) {
     await redisClient.hSet("file:::" + file.path, {
       ...file,
       ts: new Date().getTime(),
+      structure: JSON.stringify(file.structure),
     });
   } catch (error) {
     throw error;
@@ -132,6 +133,7 @@ export async function getFilesByStatus(
           hash: hashData.hash,
           status: hashData.status as FileOnRedis["status"],
           ts: parseInt(hashData.ts, 10),
+          structure: JSON.parse(hashData.structure),
         });
       }
     }

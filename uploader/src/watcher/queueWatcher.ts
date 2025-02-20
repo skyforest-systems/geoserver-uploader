@@ -6,10 +6,10 @@ import {
   releaseLock,
 } from "../repositories/db";
 import processRasterDataset from "../services/processRasterDataset";
-import { checkStructure } from "../utils/checkStructure";
 import pLimit from "p-limit"; // Ensure you install p-limit: npm install p-limit
+import processVectorDataset from "../services/processVectorDataset";
 
-const TIME_BETWEEN_CHECKS = 30 * 1000; // 30 seconds
+const TIME_BETWEEN_CHECKS = 10 * 1000; // 30 seconds
 const LOCK_TTL_FOR_QUEUE_WATCHER = 12 * 60 * 60; // 12 hours
 const LOCK_TTL_FOR_PROCESSING = 60 * 60; // 1 hour
 const MAX_CONCURRENT_TASKS = 10; // Adjust based on system capabilities
@@ -59,22 +59,50 @@ export async function queueWatcher() {
 
           console.log(`[queueWatcher] lock acquired: ${basepath}`);
           try {
-            const structure = checkStructure(basepath);
+            const structure = queuedFiles.find(
+              (f) => f.basepath === basepath
+            )?.structure;
+
             if (!structure) {
               console.warn(`[queueWatcher] invalid structure for ${basepath}`);
               return;
             }
-            console.log(
-              `[queueWatcher] processing ${structure.type}: ${basepath}`
-            );
-            await changeFileStatusByBasepath(basepath, "processing");
-            await processRasterDataset(structure);
-            console.log(
-              `[queueWatcher] finished processing ${
-                structure.type
-              }: ${basepath} in ${Date.now() - now}ms`
-            );
-            await changeFileStatusByBasepath(basepath, "done");
+
+            console.log(`[queueWatcher] processing:`, structure);
+
+            if (structure.type === "raster") {
+              console.log(
+                `[queueWatcher] processing ${structure.type}: ${basepath}`
+              );
+              await changeFileStatusByBasepath(basepath, "processing");
+              await processRasterDataset(structure);
+              console.log(
+                `[queueWatcher] finished processing ${
+                  structure.type
+                }: ${basepath} in ${Date.now() - now}ms`
+              );
+              await changeFileStatusByBasepath(basepath, "done");
+            } else if (structure.type === "points") {
+              console.log(
+                `[queueWatcher] processing ${structure.type}: ${basepath}`
+              );
+              await changeFileStatusByBasepath(basepath, "processing");
+              await processVectorDataset(structure);
+              console.log(
+                `[queueWatcher] finished processing ${
+                  structure.type
+                }: ${basepath} in ${Date.now() - now}ms`
+              );
+              await changeFileStatusByBasepath(basepath, "done");
+            } else if (structure.type === "analysis") {
+              console.warn(
+                `[queueWatcher] analysis processing not implemented yet`
+              );
+            } else if (structure.type === "styles") {
+              console.warn(
+                `[queueWatcher] styles processing not implemented yet`
+              );
+            }
           } catch (error) {
             console.error(
               `[queueWatcher] error processing ${basepath}:`,

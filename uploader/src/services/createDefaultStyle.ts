@@ -4,8 +4,7 @@ import geoserver from "../repositories/geoserver";
 import { DatasetStructure } from "../interfaces";
 
 /**
- * Creates or updates a style in GeoServer based on an SLD file located in the specified directory.
- * If the style exists, updates it. If no SLD file is found, downloads the default point style from GeoServer, modifies it, and uploads it as a new style.
+ * Downloads the default point style from GeoServer, modifies it, and uploads it as a new style.
  *
  * @param {string} workspaceName - The name of the workspace in GeoServer.
  * @param {string} styleName - The name of the style to create or update.
@@ -16,43 +15,33 @@ import { DatasetStructure } from "../interfaces";
  *
  * @returns {Promise<string>} The name of the created or updated style.
  */
-export async function createStyle(
+export async function createDefaultStyle(
   workspaceName: string,
   styleName: string,
   structure: DatasetStructure
 ) {
-  const { dir, dataset } = structure;
+  const { dir } = structure;
   workspaceName = workspaceName.toLowerCase().replace(/ /g, "_");
   styleName = styleName.toLowerCase().replace(/ /g, "_");
-
-  const sldInput = dir.replace("shp", "sld");
 
   try {
     let sldContent;
 
-    // check if the sld file exists, if not, download the default one
-    const sldFile = fs.existsSync(sldInput);
+    // Download the default point SLD from GeoServer
+    console.log(
+      `[GeoServer] No SLD file found with the name ${dir}. Fetching default point style.`
+    );
+    const defaultStyleResponse = await geoserver.get(`/rest/styles/point.sld`, {
+      responseType: "text",
+    });
 
-    if (sldFile) {
-      sldContent = fs.readFileSync(sldInput, "utf-8");
-    } else {
-      // Download the default point SLD from GeoServer
-      console.log(
-        `[GeoServer] No SLD file found with the ame ${sldInput}. Fetching default point style.`
-      );
-      const defaultStyleResponse = await geoserver.get(
-        `/rest/styles/point.sld`,
-        { responseType: "text" }
-      );
+    sldContent = defaultStyleResponse.data;
 
-      sldContent = defaultStyleResponse.data;
-
-      // Update the default SLD content with the new style name
-      sldContent = sldContent.replace(
-        /<sld:Name>.*?<\/sld:Name>/,
-        `<sld:Name>${styleName}</sld:Name>`
-      );
-    }
+    // Update the default SLD content with the new style name
+    sldContent = sldContent.replace(
+      /<sld:Name>.*?<\/sld:Name>/,
+      `<sld:Name>${styleName}</sld:Name>`
+    );
 
     // Check if style exists
     console.log(`[GeoServer] Checking if style exists: ${styleName}`);

@@ -1,6 +1,7 @@
 import { DatasetStructure } from "../interfaces";
 import * as fs from "fs";
 import path from "path";
+import environments from "../environments";
 
 export function checkStructure(
   origin: string,
@@ -92,10 +93,13 @@ export function checkStructure(
         const dataset = folderStructure[typeIndex + 1].split(".")[0];
         const extension = folderStructure[typeIndex + 1].split(".")[1];
 
-        if (!["shp", "kml", "kmz", "geojson"].includes(extension)) {
-          throw new Error(
-            `Invalid file extension for ${origin}, expected one of shp, kml, kmz, geojson`
+        if (!environments.pointsExtensions.includes(extension)) {
+          console.warn(
+            `[check-structure] Invalid file extension for ${origin}, expected one of ${environments.pointsExtensions.join(
+              ", "
+            )}`
           );
+          return null;
         }
 
         const dir = [BASEPATH, customer, year, type, dataset].join(`/`);
@@ -148,7 +152,7 @@ export function checkStructure(
 
           if (isFolder) {
             console.warn(
-              `Invalid file structure for ${dir}, expected a file, but it's a folder`
+              `[check-structure] Invalid file structure for ${dir}, expected a file, but it's a folder`
             );
             return null;
           }
@@ -169,6 +173,6 @@ export function checkStructure(
       return null;
     }
   };
-  console.log(`structure:`, structure());
+  console.log(`[check-structure] structure:`, structure());
   return structure() as DatasetStructure | null;
 }

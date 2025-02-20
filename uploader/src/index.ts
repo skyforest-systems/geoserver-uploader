@@ -13,6 +13,7 @@ import getLocks, {
   revertProcessingStatusToQueued,
 } from "./repositories/db";
 import removeWatcher from "./watcher/removeWatcher";
+import { pointsWatcher } from "./watcher/pointsWatcher";
 
 const app: Express = express();
 const port = process.env.PORT || 2000;
@@ -104,14 +105,13 @@ app.listen(port, async () => {
 
       // Only consider files with the desired extensions
       const fileExtension = "." + path.split(".").pop();
-      if (
-        !(
-          environments.analysisExtensions.includes(fileExtension) ||
-          environments.pointsExtensions.includes(fileExtension) ||
-          environments.rasterExtensions.includes(fileExtension)
-        )
-      )
-        return;
+      if (!environments.extensions) return;
+
+      // if (path.includes("raster"))
+      //   await rasterWatcher(event, path, isChokidarReady);
+
+      if (path.includes("points") && !path.includes("styles"))
+        await pointsWatcher(event, path, isChokidarReady);
 
       if (path.includes("raster"))
         await rasterWatcher(event, path, isChokidarReady);

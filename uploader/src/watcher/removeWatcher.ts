@@ -1,5 +1,3 @@
-import environments from "../environments";
-import { FileOnRedis } from "../interfaces";
 import {
   acquireLock,
   changeFileStatusByBasepath,
@@ -7,13 +5,10 @@ import {
   releaseLock,
   removeFile,
 } from "../repositories/db";
-import countTotalFiles from "../utils/countTotalFiles";
 import { createLayerGroupFromWorkspace } from "../services/createLayerGroupFromWorkspace";
 import getGeoserverNames from "../services/getGeoserverNames";
 import { removeLayer } from "../services/removeLayer";
 import { removeLayerGroup } from "../services/removeLayerGroup";
-import { removeWorkspace } from "../services/removeWorkspace";
-import { checkStructure } from "../utils/checkStructure";
 
 const LOCK_TTL_FOR_REMOVE_WATCHER = 60 * 60; // 1 hour
 
@@ -32,7 +27,7 @@ export default async function removeWatcher() {
     }
 
     for (let file of toBeRemoved) {
-      const structure = checkStructure(file.path);
+      const structure = file.structure;
 
       if (!structure) {
         console.warn(`[removeWatcher] invalid structure for ${file.path}`);
