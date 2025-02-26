@@ -11,7 +11,7 @@ export default function getGeoserverNames(structure: DatasetStructure) {
       storeName: `${structure.customer}_${structure.year}_${structure.dataset}`,
       layerName: `${structure.customer}_${structure.year}_${structure.dataset}_points`,
       nativeName: `${structure.dataset}_output`,
-      styleName: `${structure.customer}_${structure.year}_${structure.dataset}`,
+      styleName: `${structure.customer}_${structure.year}_${structure.dataset}_points_default`,
     };
   } else if (structure.type === "analysis") {
     return {
@@ -19,6 +19,24 @@ export default function getGeoserverNames(structure: DatasetStructure) {
       layerGroupName,
       storeName: `${structure.customer}_${structure.year}_${structure.dataset}`,
       layerName: `${structure.customer}_${structure.year}_${structure.dataset}_analysis`,
+      nativeName: ``,
+      styleName: `${structure.customer}_${structure.year}_${structure.dataset}_analysis_default`,
+    };
+  } else if (structure.type === "styles") {
+    return {
+      workspaceName,
+      layerGroupName,
+      storeName: `${structure.customer}_${structure.year}_${structure.dataset}`,
+      layerName: `${structure.customer}_${structure.year}_${structure.dataset}`,
+      nativeName: "",
+      styleName: `${structure.customer}_${structure.year}_${structure.dataset.replace(`/`, `_`)}`,
+    };
+  } else if (structure.type === "raster") {
+    return {
+      workspaceName,
+      layerGroupName,
+      storeName: `${structure.customer}_${structure.year}_${structure.dataset}`,
+      layerName: `${structure.customer}_${structure.year}_${structure.dataset}`,
       nativeName: ``,
       styleName: "",
     };

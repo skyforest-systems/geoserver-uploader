@@ -62,6 +62,8 @@ export async function getFile(path: string): Promise<FileOnRedis | null> {
 
     const file = (await redisClient.hGetAll("file:::" + path)) as any;
 
+    file.structure = JSON.parse(file.structure);
+
     return file;
   } catch (error) {
     throw error;

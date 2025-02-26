@@ -4,15 +4,17 @@ import { createLayer } from "./createLayer";
 import { createLayerGroupFromWorkspace } from "./createLayerGroupFromWorkspace";
 import { createShapefileStore } from "./createShapefileStore";
 import { createStore } from "./createStore";
-import { createStyle } from "./createStyle";
+import { createDefaultStyle } from "./createDefaultStyle";
 import { createVectorLayer } from "./createVectorLayer";
 import { createWorkspace } from "./createWorkspace";
 import getGeoserverNames from "./getGeoserverNames";
 import processAnalysis from "./processAnalysis.deprecated";
 import processRaster from "./processRaster";
-import processVector from "./processVectorFile.deprecated";
+import processVector from "./processVector";
 
-export default async function processRasterDataset(structure: DatasetStructure) {
+export default async function processRasterDataset(
+  structure: DatasetStructure
+) {
   const now = Date.now();
 
   const {
@@ -67,7 +69,7 @@ export default async function processRasterDataset(structure: DatasetStructure) 
 
       await createWorkspace(workspaceName);
       await createShapefileStore(workspaceName, storeName, points);
-      await createStyle(workspaceName, layerName, structure);
+      await createDefaultStyle(workspaceName, layerName, structure);
       await createVectorLayer(
         workspaceName,
         storeName,

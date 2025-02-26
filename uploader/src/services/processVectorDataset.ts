@@ -6,6 +6,7 @@ import { createVectorLayer } from "./createVectorLayer";
 import { createWorkspace } from "./createWorkspace";
 import getGeoserverNames from "./getGeoserverNames";
 import processVector from "./processVector";
+import { createLayerGroup } from "./createLayerGroup";
 
 export default async function processVectorDataset(
   structure: DatasetStructure
@@ -57,7 +58,7 @@ export default async function processVectorDataset(
 
     await createWorkspace(workspaceName);
     await createShapefileStore(workspaceName, storeName, points);
-    await createDefaultStyle(workspaceName, layerName, structure);
+    await createDefaultStyle(workspaceName, styleName, structure);
     await createVectorLayer(
       workspaceName,
       storeName,
@@ -65,6 +66,8 @@ export default async function processVectorDataset(
       styleName,
       nativeName
     );
+
+    // TODO: Recreate all layer groups for each style
   } catch (error) {
     throw error;
   } finally {

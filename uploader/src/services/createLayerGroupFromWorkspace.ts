@@ -15,10 +15,6 @@ export async function createLayerGroupFromWorkspace(
     return;
   }
 
-  let pointLayers = layers.filter((layer) => layer.name.includes("_points"));
-  let analysisLayers = layers.filter((layer) =>
-    layer.name.includes("_analysis")
-  );
   let rasterLayers = layers.filter(
     (layer) =>
       !layer.name.includes("_points") && !layer.name.includes("_analysis")
@@ -27,16 +23,10 @@ export async function createLayerGroupFromWorkspace(
   await createLayerGroup(
     workspaceName,
     layerGroupName,
-    [...rasterLayers, ...analysisLayers, ...pointLayers],
+    [...rasterLayers],
     [
       ...rasterLayers.map((e) => ({
         name: `raster`,
-      })),
-      ...analysisLayers.map((e) => ({
-        name: `raster`,
-      })),
-      ...pointLayers.map((e) => ({
-        name: `${workspaceName}:${e.name}`,
       })),
     ]
   );

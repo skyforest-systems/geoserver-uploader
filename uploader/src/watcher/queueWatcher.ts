@@ -8,6 +8,7 @@ import {
 import processRasterDataset from "../services/processRasterDataset";
 import pLimit from "p-limit"; // Ensure you install p-limit: npm install p-limit
 import processVectorDataset from "../services/processVectorDataset";
+import processStyleDataset from "../services/processStyleDataset";
 
 const TIME_BETWEEN_CHECKS = 10 * 1000; // 30 seconds
 const LOCK_TTL_FOR_QUEUE_WATCHER = 12 * 60 * 60; // 12 hours
@@ -99,9 +100,17 @@ export async function queueWatcher() {
                 `[queueWatcher] analysis processing not implemented yet`
               );
             } else if (structure.type === "styles") {
-              console.warn(
-                `[queueWatcher] styles processing not implemented yet`
+              console.log(
+                `[queueWatcher] processing ${structure.type}: ${basepath}`
               );
+              await changeFileStatusByBasepath(basepath, "processing");
+              await processStyleDataset(structure);
+              console.log(
+                `[queueWatcher] finished processing ${
+                  structure.type
+                }: ${basepath} in ${Date.now() - now}ms`
+              );
+              await changeFileStatusByBasepath(basepath, "done");
             }
           } catch (error) {
             console.error(

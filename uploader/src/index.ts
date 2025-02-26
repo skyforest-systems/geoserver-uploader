@@ -14,6 +14,7 @@ import getLocks, {
 } from "./repositories/db";
 import removeWatcher from "./watcher/removeWatcher";
 import { pointsWatcher } from "./watcher/pointsWatcher";
+import { stylesWatcher } from "./watcher/stylesWatcher";
 
 const app: Express = express();
 const port = process.env.PORT || 2000;
@@ -113,8 +114,8 @@ app.listen(port, async () => {
       if (path.includes("points") && !path.includes("styles"))
         await pointsWatcher(event, path, isChokidarReady);
 
-      if (path.includes("raster"))
-        await rasterWatcher(event, path, isChokidarReady);
+      if (path.includes("styles"))
+        await stylesWatcher(event, path, isChokidarReady);
     });
 
   setInterval(async () => {
