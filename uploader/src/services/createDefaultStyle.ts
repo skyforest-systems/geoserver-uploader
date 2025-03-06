@@ -1,8 +1,8 @@
-import fs from "fs";
-import path from "path";
-import geoserver from "../repositories/geoserver";
-import { DatasetStructure } from "../interfaces";
-import { createStyle } from "./createStyle";
+import fs from 'fs'
+import path from 'path'
+import geoserver from '../repositories/geoserver'
+import { DatasetStructure } from '../interfaces'
+import { createStyle } from './createStyle'
 
 /**
  * Downloads the default point style from GeoServer, modifies it, and uploads it as a new style.
@@ -21,35 +21,35 @@ export async function createDefaultStyle(
   styleName: string,
   structure: DatasetStructure
 ) {
-  const { dir } = structure;
-  workspaceName = workspaceName.toLowerCase().replace(/ /g, "_");
-  styleName = styleName.toLowerCase().replace(/ /g, "_");
+  const { dir } = structure
+  workspaceName = workspaceName.toLowerCase().replace(/ /g, '_')
+  styleName = styleName.toLowerCase().replace(/ /g, '_')
 
   try {
-    let sldContent;
+    let sldContent
 
     // Download the default point SLD from GeoServer
     const defaultStyleResponse = await geoserver.get(`/rest/styles/point.sld`, {
-      responseType: "text",
-    });
+      responseType: 'text',
+    })
 
-    sldContent = defaultStyleResponse.data;
+    sldContent = defaultStyleResponse.data
 
     // Update the default SLD content with the new style name
     sldContent = sldContent.replace(
       /<sld:Name>.*?<\/sld:Name>/,
       `<sld:Name>${styleName}</sld:Name>`
-    );
+    )
 
     const style = await createStyle(
       workspaceName,
       styleName,
       structure,
       sldContent
-    );
-    return style;
+    )
+    return style
   } catch (error) {
-    console.error(`[GeoServer] Error creating or updating style: ${error}`);
-    throw error;
+    console.error(`[GeoServer] Error creating or updating style: ${error}`)
+    throw error
   }
 }

@@ -1,10 +1,10 @@
-import fs from "fs";
-import path from "path";
-import { exec } from "child_process";
-import { promisify } from "util";
-import { DatasetStructure } from "../interfaces";
+import fs from 'fs'
+import path from 'path'
+import { exec } from 'child_process'
+import { promisify } from 'util'
+import { DatasetStructure } from '../interfaces'
 
-const execPromise = promisify(exec);
+const execPromise = promisify(exec)
 
 /**
  * Processes a single analysis TIF file in a specified directory.
@@ -21,41 +21,41 @@ const execPromise = promisify(exec);
 export default async function processAnalysis(structure: DatasetStructure) {
   console.log(
     `[process-analysis-service] Processing analysis TIF in ${structure.dir}`
-  );
+  )
 
-  const { dir } = structure;
+  const { dir } = structure
 
   try {
-    const inputTifPath = dir;
-    const outputTifPath = inputTifPath.split(".tif")[0] + "_output.tif"; // Output overwrites the input file
+    const inputTifPath = dir
+    const outputTifPath = inputTifPath.split('.tif')[0] + '_output.tif' // Output overwrites the input file
 
     console.log(
       `[process-analysis-service] Standardizing TIF file: ${inputTifPath}`
-    );
+    )
 
     // Standardize the TIF to EPSG:3006 and apply compression
     await execPromise(
       `gdal_translate "${inputTifPath}" "${outputTifPath}" -a_srs EPSG:3006 -co COMPRESS=JPEG -co BIGTIFF=YES -co TILED=YES -co NUM_THREADS=8 -a_nodata 0`
-    );
+    )
 
     console.log(
       `[process-analysis-service] Adding pyramids to TIF file: ${outputTifPath}`
-    );
+    )
 
     // Add overviews to the TIF file
     await execPromise(
       `gdaladdo -r average "${outputTifPath}" --config GDAL_NUM_THREADS 8 --config BIGTIFF_OVERVIEW IF_NEEDED`
-    );
+    )
 
     console.log(
       `[process-analysis-service] Finished processing analysis TIF: ${outputTifPath}`
-    );
+    )
 
-    return outputTifPath;
+    return outputTifPath
   } catch (error) {
     console.error(
       `[process-analysis-service] Error processing analysis TIF: ${error}`
-    );
-    throw error;
+    )
+    throw error
   }
 }

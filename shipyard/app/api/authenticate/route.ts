@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     const { username, password } = await request.json();
 
     const token = `Basic ${Buffer.from(`${username}:${password}`).toString(
-      "base64"
+      "base64",
     )}`;
 
     const response = await fetch(`${geoserverUrl}/rest/workspaces`, {
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     if (!response.ok) {
       return NextResponse.json(
         { error: await response.text() },
-        { status: response.status }
+        { status: response.status },
       );
     } else {
       return NextResponse.json({ status: 204 });

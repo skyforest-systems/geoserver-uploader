@@ -1,4 +1,4 @@
-import geoserver from "../repositories/geoserver";
+import geoserver from '../repositories/geoserver'
 
 /**
  * Create a new layer in GeoServer.
@@ -11,9 +11,9 @@ export async function createLayer(
   storeName: string,
   layerName: string
 ) {
-  workspaceName = workspaceName.toLowerCase().replace(/ /g, "_");
-  storeName = storeName.toLowerCase().replace(/ /g, "_");
-  layerName = layerName.toLowerCase().replace(/ /g, "_");
+  workspaceName = workspaceName.toLowerCase().replace(/ /g, '_')
+  storeName = storeName.toLowerCase().replace(/ /g, '_')
+  layerName = layerName.toLowerCase().replace(/ /g, '_')
   try {
     const response = await geoserver.post(
       `/rest/workspaces/${workspaceName}/coveragestores/${storeName}/coverages`,
@@ -21,16 +21,16 @@ export async function createLayer(
         coverage: {
           name: layerName,
           title: layerName,
-          srs: "EPSG:3006",
+          srs: 'EPSG:3006',
           enabled: true,
-          advertised: layerName.includes("_analysis") ? true : false,
+          advertised: layerName.includes('_analysis') ? true : false,
         },
       }
-    );
-    console.log(`[GeoServer] Layer created: ${layerName}`);
-    return response.data;
+    )
+    console.log(`[GeoServer] Layer created: ${layerName}`)
+    return response.data
   } catch (error) {
-    console.error(`[GeoServer] Error creating layer: ${error}`);
-    throw error;
+    console.error(`[GeoServer] Error creating layer: ${error}`)
+    throw error
   }
 }
