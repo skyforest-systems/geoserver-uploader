@@ -1,5 +1,10 @@
 import { DatasetStructure } from '../interfaces'
-import { acquireLock, releaseLock } from '../repositories/db'
+import {
+  acquireLock,
+  changeFileStatusByBasepath,
+  getFilesByPattern,
+  releaseLock,
+} from '../repositories/db'
 import { createShapefileStore } from './createShapefileStore'
 import { createDefaultStyle } from './createDefaultStyle'
 import { createVectorLayer } from './createVectorLayer'
@@ -58,7 +63,6 @@ export default async function processVectorDataset(
 
     await createWorkspace(workspaceName)
     await createShapefileStore(workspaceName, storeName, points)
-    await createDefaultStyle(workspaceName, styleName, structure)
     await createVectorLayer(
       workspaceName,
       storeName,
@@ -67,7 +71,17 @@ export default async function processVectorDataset(
       nativeName
     )
 
-    // TODO: Recreate all layer groups for each style
+    const stylesToRecreate = await getFilesByPattern(
+      `${workspaceName.replace('_', '/')}/styles/points`
+    )
+
+    console.log(
+      `[processVectorDataset] re-queueing ${stylesToRecreate.length} styles: ${stylesToRecreate.map((e) => e.structure.dir).join(', ')}`
+    )
+
+    for (const style of stylesToRecreate) {
+      await changeFileStatusByBasepath(style.basepath, 'queued')
+    }
   } catch (error) {
     throw error
   } finally {

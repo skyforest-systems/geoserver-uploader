@@ -7,7 +7,7 @@ export default function getGeoserverNames(structure: DatasetStructure) {
   if (structure.type === 'points') {
     return {
       workspaceName,
-      layerGroupName,
+      layerGroupName: `${structure.customer}_${structure.year}_points`,
       storeName: `${structure.customer}_${structure.year}_${structure.dataset}`,
       layerName: `${structure.customer}_${structure.year}_${structure.dataset}_points`,
       nativeName: `${structure.dataset}_output`,
@@ -16,7 +16,7 @@ export default function getGeoserverNames(structure: DatasetStructure) {
   } else if (structure.type === 'analysis') {
     return {
       workspaceName,
-      layerGroupName,
+      layerGroupName: `${structure.customer}_${structure.year}_analysis`,
       storeName: `${structure.customer}_${structure.year}_${structure.dataset}`,
       layerName: `${structure.customer}_${structure.year}_${structure.dataset}_analysis`,
       nativeName: ``,
@@ -25,11 +25,19 @@ export default function getGeoserverNames(structure: DatasetStructure) {
   } else if (structure.type === 'styles') {
     return {
       workspaceName,
-      layerGroupName,
+      layerGroupName:
+        `${structure.customer}_${structure.year}_${structure.dataset.replace('/', '_')}`.replace(
+          `.sld`,
+          ''
+        ),
       storeName: `${structure.customer}_${structure.year}_${structure.dataset}`,
       layerName: `${structure.customer}_${structure.year}_${structure.dataset}`,
       nativeName: '',
-      styleName: `${structure.customer}_${structure.year}_${structure.dataset.replace(`/`, `_`)}`,
+      styleName:
+        `${structure.customer}_${structure.year}_${structure.dataset.replace(`/`, `_`)}`.replace(
+          `.sld`,
+          ''
+        ),
     }
   } else if (structure.type === 'raster') {
     return {

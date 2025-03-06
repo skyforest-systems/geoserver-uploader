@@ -91,7 +91,7 @@ export function checkStructure(
       // extensions
       if (type.toLowerCase() === 'points') {
         const dataset = folderStructure[typeIndex + 1].split('.')[0]
-        const extension = folderStructure[typeIndex + 1].split('.')[1]
+        const extension = `.` + folderStructure[typeIndex + 1].split('.')[1]
 
         if (!environments.pointsExtensions.includes(extension)) {
           console.warn(
@@ -107,7 +107,7 @@ export function checkStructure(
         // skips the isFolder check if isUnlink is provided, since the file wont exist to be checked
         if (!isUnlink) {
           const isFolder = fs
-            .lstatSync(path.join(dir + '.' + extension))
+            .lstatSync(path.join(dir + extension))
             .isDirectory()
 
           if (isFolder) {

@@ -115,6 +115,36 @@ export async function removeFilesByBasepath(basepath: string) {
   }
 }
 
+export async function getFilesByPattern(
+  pattern: string
+): Promise<FileOnRedis[]> {
+  try {
+    const keys = await getAllFiles()
+
+    const result: FileOnRedis[] = []
+    for (const key of keys) {
+      if (!key.includes(pattern)) continue
+      const keyType = await redisClient.type(key)
+
+      if (keyType === 'hash') {
+        const hashData = await redisClient.hGetAll(key)
+        result.push({
+          path: hashData.path,
+          basepath: hashData.basepath,
+          hash: hashData.hash,
+          status: hashData.status as FileOnRedis['status'],
+          ts: parseInt(hashData.ts, 10),
+          structure: JSON.parse(hashData.structure),
+        })
+      }
+    }
+
+    return result
+  } catch (error) {
+    throw error
+  }
+}
+
 export async function getFilesByStatus(
   status: FileOnRedis['status']
 ): Promise<FileOnRedis[]> {

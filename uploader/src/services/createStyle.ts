@@ -19,11 +19,17 @@ export async function createStyle(
 
   console.log(JSON.stringify(xmlStyle))
 
-  xmlStyle['StyledLayerDescriptor']['NamedLayer']['se:Name']['_text'] =
-    styleName
-  xmlStyle['StyledLayerDescriptor']['NamedLayer']['UserStyle']['se:Name'][
-    '_text'
-  ] = styleName
+  try {
+    xmlStyle['StyledLayerDescriptor']['NamedLayer']['se:Name']['_text'] =
+      styleName
+    xmlStyle['StyledLayerDescriptor']['NamedLayer']['UserStyle']['se:Name'][
+      '_text'
+    ] = styleName
+  } catch (error) {
+    console.warn(
+      `[createStyle] Couldn't redefine styleName, going with default`
+    )
+  }
 
   console.log(JSON.stringify(xmlStyle))
 
