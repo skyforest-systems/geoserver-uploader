@@ -45,7 +45,7 @@ services:
     restart: always
     volumes:
       - D:/GEOSERVER_DATA:/app/files
-      - skyport
+      - skyport:/mnt/test
     networks:
       - skyforest-systems
 
