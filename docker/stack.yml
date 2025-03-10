@@ -45,6 +45,7 @@ services:
     restart: always
     volumes:
       - D:/GEOSERVER_DATA:/app/files
+      - skyport:/mnt/test
     networks:
       - skyforest-systems
 
@@ -133,6 +134,8 @@ services:
 
 volumes:
   redis-insight:
+  skyport:
+    external: true
 
 networks:
   skyforest-systems:
