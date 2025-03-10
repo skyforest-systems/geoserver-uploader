@@ -134,6 +134,8 @@ services:
 
 volumes:
   redis-insight:
+  skyport:
+    external: true
 
 networks:
   skyforest-systems:
