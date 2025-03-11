@@ -113,21 +113,21 @@ export async function stylesWatcher(
       }
     }
 
-    if (event === 'unlink') {
-      const structure = await checkStructure(path, true)
+    // if (event === 'unlink') {
+    //   const structure = await checkStructure(path, true)
 
-      if (!structure) {
-        shouldLog &&
-          console.log(
-            `[stylesWatcher] invalid structure for ${path}, file ignored`
-          )
-        return
-      }
-      const file = await getFile(path)
-      shouldLog &&
-        console.log(`[stylesWatcher] updating file status to removed: ${path}`)
-      await saveFile({ ...file!, status: 'removed' })
-    }
+    //   if (!structure) {
+    //     shouldLog &&
+    //       console.log(
+    //         `[stylesWatcher] invalid structure for ${path}, file ignored`
+    //       )
+    //     return
+    //   }
+    //   const file = await getFile(path)
+    //   shouldLog &&
+    //     console.log(`[stylesWatcher] updating file status to removed: ${path}`)
+    //   await saveFile({ ...file!, status: 'removed' })
+    // }
   } catch (error) {
     console.error(`[stylesWatcher] error:`, error)
   } finally {

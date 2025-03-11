@@ -111,19 +111,19 @@ export async function rasterWatcher(
       }
     }
 
-    if (event === 'unlink') {
-      const structure = await checkStructure(path, true)
+    // if (event === 'unlink') {
+    //   const structure = await checkStructure(path, true)
 
-      if (!structure) {
-        shouldLog &&
-          console.log(`[rasterWatcher] invalid structure for ${path}`)
-        return
-      }
-      const file = await getFile(path)
-      shouldLog &&
-        console.log(`[rasterWatcher] updating file status to removed: ${path}`)
-      await saveFile({ ...file!, status: 'removed' })
-    }
+    //   if (!structure) {
+    //     shouldLog &&
+    //       console.log(`[rasterWatcher] invalid structure for ${path}`)
+    //     return
+    //   }
+    //   const file = await getFile(path)
+    //   shouldLog &&
+    //     console.log(`[rasterWatcher] updating file status to removed: ${path}`)
+    //   await saveFile({ ...file!, status: 'removed' })
+    // }
   } catch (error) {
     console.error(`[rasterWatcher] error:`, error)
   } finally {

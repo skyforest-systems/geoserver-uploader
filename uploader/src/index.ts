@@ -107,8 +107,8 @@ app.listen(port, async () => {
       const fileExtension = '.' + path.split('.').pop()
       if (!environments.extensions) return
 
-      // if (path.includes("raster"))
-      //   await rasterWatcher(event, path, isChokidarReady);
+      if (path.includes('raster'))
+        await rasterWatcher(event, path, isChokidarReady)
 
       if (path.includes('points') && !path.includes('styles'))
         await pointsWatcher(event, path, isChokidarReady)
