@@ -76,9 +76,30 @@ export default async function processStyleDataset(structure: DatasetStructure) {
 
       return layerGroup
     } else if (structure.dataset.includes('analysis')) {
-      console.log(
-        '[process-styles-dataset] analysis styles processmentnot implemented yet'
+      const layers = await getLayersFromWorkspace(workspaceName)
+      const analysisLayers = layers.filter((layer) =>
+        layer.name.includes('_analysis')
       )
+
+      if (!analysisLayers || analysisLayers.length === 0) {
+        console.log(
+          `[processStyleDataset] no analysis layers found in workspace ${workspaceName}, no layer group was created`
+        )
+        return
+      }
+
+      const stylesForLayers = analysisLayers.map((_) => {
+        return { name: createdStyle }
+      })
+
+      const layerGroup = await createLayerGroup(
+        layerGroupName,
+        workspaceName,
+        analysisLayers,
+        stylesForLayers
+      )
+
+      return layerGroup
     }
   } catch (error) {
     throw error

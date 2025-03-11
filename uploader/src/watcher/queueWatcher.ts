@@ -93,6 +93,13 @@ export async function queueWatcher() {
               )
               await changeFileStatusByBasepath(basepath, 'done')
             } else if (structure.type === 'analysis') {
+
+              console.log(
+                `[queueWatcher] processing ${structure.type}: ${basepath}`
+              )
+              await changeFileStatusByBasepath(basepath, 'processing')
+
+              
               console.warn(
                 `[queueWatcher] analysis processing not implemented yet`
               )

@@ -1,4 +1,3 @@
-import geoserver from '../repositories/geoserver'
 import { createLayerGroup } from './createLayerGroup'
 import { getLayersFromWorkspace } from './getLayersFromWorkspace'
 

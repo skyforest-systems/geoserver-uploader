@@ -1,5 +1,3 @@
-import fs from 'fs'
-import path from 'path'
 import geoserver from '../repositories/geoserver'
 import { DatasetStructure } from '../interfaces'
 import { createStyle } from './createStyle'

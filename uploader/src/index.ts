@@ -8,13 +8,13 @@ import { geoserverWatcher } from './watcher/geoserverWatcher'
 import getLocks, {
   checkRasterWatcherLock,
   releaseAllLocks,
-  removeFile,
   removeFilesByBasepath,
   revertProcessingStatusToQueued,
 } from './repositories/db'
 import removeWatcher from './watcher/removeWatcher'
 import { pointsWatcher } from './watcher/pointsWatcher'
 import { stylesWatcher } from './watcher/stylesWatcher'
+import { analysisWatcher } from './watcher/analysisWatcher'
 
 const app: Express = express()
 const port = process.env.PORT || 2000
@@ -112,6 +112,9 @@ app.listen(port, async () => {
 
       if (path.includes('points') && !path.includes('styles'))
         await pointsWatcher(event, path, isChokidarReady)
+
+      if (path.includes('analysis') && !path.includes('styles'))
+        await analysisWatcher(event, path, isChokidarReady)
 
       if (path.includes('styles'))
         await stylesWatcher(event, path, isChokidarReady)

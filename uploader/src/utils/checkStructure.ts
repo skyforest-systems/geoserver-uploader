@@ -173,6 +173,6 @@ export function checkStructure(
       return null
     }
   }
-  console.log(`[check-structure] structure:`, structure())
+  // console.log(`[check-structure] structure:`, structure())
   return structure() as DatasetStructure | null
 }

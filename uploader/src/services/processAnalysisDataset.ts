@@ -5,27 +5,17 @@ import {
   getFilesByPattern,
   releaseLock,
 } from '../repositories/db'
-import { createShapefileStore } from './createShapefileStore'
-import { createDefaultStyle } from './createDefaultStyle'
-import { createVectorLayer } from './createVectorLayer'
 import { createWorkspace } from './createWorkspace'
 import getGeoserverNames from './getGeoserverNames'
-import processVector from './processVector'
-import { createLayerGroup } from './createLayerGroup'
+import processAnalysis from './processAnalysis'
+import { createStore } from './createStore'
+import { createLayer } from './createLayer'
 
-export default async function processVectorDataset(
+export default async function processAnalysisDataset(
   structure: DatasetStructure
 ) {
-  const now = Date.now()
-
-  const {
-    workspaceName,
-    layerGroupName,
-    storeName,
-    layerName,
-    nativeName,
-    styleName,
-  } = getGeoserverNames(structure)
+  const { workspaceName, layerGroupName, storeName, layerName } =
+    getGeoserverNames(structure)
 
   async function acquireLayerGroupLock(maxRetries = 10): Promise<boolean> {
     let attempts = 0
@@ -44,39 +34,33 @@ export default async function processVectorDataset(
 
   if (!layerGroupLock) {
     console.error(
-      `[processVectorDataset] Could not acquire lock for layer group: ${layerGroupName}`
+      `[processAnalysisDataset] Could not acquire lock for layer group: ${layerGroupName}`
     )
     return
   }
 
   try {
-    const points = await processVector(structure)
+    const analysis = await processAnalysis(structure)
 
-    if (!points) {
+    if (!analysis) {
       console.log(
-        `[processVectorDataset] ${
+        `[processAnalysisDataset] ${
           structure.dir + `/` + structure.dataset
-        } is not a points dataset`
+        } is not an analysis dataset`
       )
       return
     }
 
     await createWorkspace(workspaceName)
-    await createShapefileStore(workspaceName, storeName, points)
-    await createVectorLayer(
-      workspaceName,
-      storeName,
-      layerName,
-      styleName,
-      nativeName
-    )
+    await createStore(workspaceName, storeName, analysis)
+    await createLayer(workspaceName, storeName, layerName)
 
     const stylesToRecreate = await getFilesByPattern(
-      `${workspaceName.replace('_', '/')}/styles/points`
+      `${workspaceName.replace('_', '/')}/styles/analysis`
     )
 
     console.log(
-      `[processVectorDataset] re-queueing ${stylesToRecreate.length} styles: ${stylesToRecreate.map((e) => e.structure.dir).join(', ')}`
+      `[processAnalysisDataset] re-queueing ${stylesToRecreate.length} styles: ${stylesToRecreate.map((e) => e.structure.dir).join(', ')}`
     )
 
     for (const style of stylesToRecreate) {
