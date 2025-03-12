@@ -9,6 +9,7 @@ import processRasterDataset from '../services/processRasterDataset'
 import pLimit from 'p-limit' // Ensure you install p-limit: npm install p-limit
 import processVectorDataset from '../services/processVectorDataset'
 import processStyleDataset from '../services/processStyleDataset'
+import processAnalysisDataset from '../services/processAnalysisDataset'
 
 const TIME_BETWEEN_CHECKS = 10 * 1000 // 30 seconds
 const LOCK_TTL_FOR_QUEUE_WATCHER = 12 * 60 * 60 // 12 hours
@@ -93,16 +94,12 @@ export async function queueWatcher() {
               )
               await changeFileStatusByBasepath(basepath, 'done')
             } else if (structure.type === 'analysis') {
-
               console.log(
                 `[queueWatcher] processing ${structure.type}: ${basepath}`
               )
               await changeFileStatusByBasepath(basepath, 'processing')
-
-              
-              console.warn(
-                `[queueWatcher] analysis processing not implemented yet`
-              )
+              await processAnalysisDataset(structure)
+              await changeFileStatusByBasepath(basepath, 'done')
             } else if (structure.type === 'styles') {
               console.log(
                 `[queueWatcher] processing ${structure.type}: ${basepath}`

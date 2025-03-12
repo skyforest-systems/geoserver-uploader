@@ -132,6 +132,51 @@ export function checkStructure(
         }
       }
 
+      // folder structure for analysis:
+      // <customer>/<year>/analysis/<dataset>
+      if (type.toLowerCase() === 'analysis') {
+        const dataset = folderStructure[typeIndex + 1].split('.')[0]
+        const extension = `.` + folderStructure[typeIndex + 1].split('.')[1]
+
+        if (!environments.analysisExtensions.includes(extension)) {
+          console.warn(
+            `[check-structure] Invalid file extension for ${origin}, expected one of ${environments.analysisExtensions.join(
+              ', '
+            )}`
+          )
+          return null
+        }
+
+        const dir = [BASEPATH, customer, year, type, dataset].join(`/`)
+
+        // skips the isFolder check if isUnlink is provided, since the file wont exist to be checked
+        if (!isUnlink) {
+          const isFolder = fs
+            .lstatSync(path.join(dir + extension))
+            .isDirectory()
+
+          if (isFolder) {
+            console.warn(
+              `Invalid file structure for ${dir}, expected a file, but it's a folder`
+            )
+            return null
+          }
+        }
+
+        if (!folderStructure.join(`/`).includes(path.join(dir)))
+          throw new Error(
+            `Invalid folder structure for ${origin}, expected ${dir}`
+          )
+
+        return {
+          customer,
+          year,
+          type: 'analysis',
+          dataset,
+          dir: dir,
+        }
+      }
+
       // folder structure for styles can be either:
       // - <customer>/<year>/styles/points/<dataset>
       // - <customer>/<year>/styles/analysis/<dataset>

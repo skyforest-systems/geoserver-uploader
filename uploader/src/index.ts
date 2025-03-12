@@ -107,6 +107,8 @@ app.listen(port, async () => {
       const fileExtension = '.' + path.split('.').pop()
       if (!environments.extensions) return
 
+      if (path.includes('.DS_Store')) return
+
       if (path.includes('raster'))
         await rasterWatcher(event, path, isChokidarReady)
 

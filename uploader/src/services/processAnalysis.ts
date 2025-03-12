@@ -12,15 +12,33 @@ export default async function processAnalysis(structure: DatasetStructure) {
   )
 
   const { dir, dataset } = structure
-  const inputPath = path.join(dir, structure.dataset + '.tif')
-  const tifPath = path.join(dir, structure.dataset + '_output.tif')
+  const inputPath = dir + '.tif'
+  const tifPath = dir + '_output.tif'
   const fileListPath = path.join(dir, 'file_list.txt')
 
   try {
+    console.log(
+      `[process-analysis-service] Extracting band names from: ${inputPath}`
+    )
+    const { stdout: metadata } = await execPromise(
+      `gdalinfo -json "${inputPath}"`
+    )
+    const originalMetadata = JSON.parse(metadata)
+
     console.log(`[process-analysis-service] Generating TIF file: ${tifPath}`)
     await execPromise(
-      `gdal_translate "${inputPath}" "${tifPath}" -a_srs EPSG:3006 -co COMPRESS=JPEG -co PHOTOMETRIC=YCBCR -co BIGTIFF=YES -co TILED=YES -co NUM_THREADS=8 -a_nodata 0`
+      `gdal_translate "${inputPath}" "${tifPath}" -a_srs EPSG:3006 -co COMPRESS=DEFLATE -co BIGTIFF=YES -co TILED=YES -co NUM_THREADS=8 -a_nodata 0`
     )
+
+    console.log(
+      `[process-analysis-service] Restoring band names to: ${tifPath}`
+    )
+    for (let i = 0; i < originalMetadata.bands.length; i++) {
+      const bandName = originalMetadata.bands[i].description || `Band_${i + 1}`
+      await execPromise(
+        `gdal_edit.py -mo "BAND_NAME_${i + 1}=${bandName}" "${tifPath}"`
+      )
+    }
 
     console.log(
       `[process-analysis-service] Adding overviews to TIF file: ${tifPath}`
@@ -40,7 +58,6 @@ export default async function processAnalysis(structure: DatasetStructure) {
     )
     throw error
   } finally {
-    // Cleanup temporary files
     if (fs.existsSync(fileListPath)) {
       fs.unlinkSync(fileListPath)
     }

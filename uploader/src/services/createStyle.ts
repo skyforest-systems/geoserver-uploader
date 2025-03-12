@@ -12,39 +12,73 @@ export async function createStyle(
   workspaceName = workspaceName.toLowerCase().replace(/ /g, '_')
   styleName = styleName.toLowerCase().replace(/ /g, '_')
 
-  // const parser = new DOMParser();
-  // const xmlStyle = parser.parseFromString(String(styleContent), "text/xml");
-
   const xmlStyle: any = xml2js(styleContent, { compact: true })
 
-  console.log(JSON.stringify(xmlStyle))
-
-  try {
-    xmlStyle['StyledLayerDescriptor']['NamedLayer']['se:Name']['_text'] =
-      styleName
-    xmlStyle['StyledLayerDescriptor']['NamedLayer']['UserStyle']['se:Name'][
-      '_text'
-    ] = styleName
-  } catch (error) {
-    console.warn(
-      `[createStyle] Couldn't redefine styleName, going with default`
-    )
+  function ensurePath(obj: any, path: string[]) {
+    return path.reduce((acc, key, index) => {
+      if (!acc[key]) {
+        acc[key] = index === path.length - 1 ? { _text: '' } : {}
+      }
+      return acc[key]
+    }, obj)
   }
 
-  console.log(JSON.stringify(xmlStyle))
+  if (styleContent.includes('se:Name')) {
+    try {
+      ensurePath(xmlStyle, ['StyledLayerDescriptor', 'NamedLayer', 'se:Name'])[
+        '_text'
+      ] = styleName
+    } catch (error) {
+      console.warn(
+        `[createStyle] Couldn't redefine styleName at 'se:Name', going with default`
+      )
+    }
+
+    try {
+      ensurePath(xmlStyle, [
+        'StyledLayerDescriptor',
+        'NamedLayer',
+        'UserStyle',
+        'se:Name',
+      ])['_text'] = styleName
+    } catch {
+      console.warn(
+        `[createStyle] Couldn't redefine styleName at 'UserStyle.se:Name', going with default`
+      )
+    }
+  } else {
+    try {
+      ensurePath(xmlStyle, [
+        'StyledLayerDescriptor',
+        'NamedLayer',
+        'UserStyle',
+        'Name',
+      ])['_text'] = styleName
+    } catch {
+      console.warn(
+        `[createStyle] Couldn't redefine styleName at 'UserStyle.Name', going with default`
+      )
+    }
+
+    try {
+      ensurePath(xmlStyle, ['StyledLayerDescriptor', 'NamedLayer', 'Name'])[
+        '_text'
+      ] = styleName
+    } catch {
+      console.warn(
+        `[createStyle] Couldn't redefine styleName at 'NamedLayer.Name', going with default`
+      )
+    }
+  }
 
   const style = js2xml(xmlStyle, { compact: true })
 
-  console.log('style >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', style)
-
   try {
-    // Check if style exists
     console.log(`[GeoServer] Checking if style exists: ${styleName}`)
     try {
       await geoserver.get(
         `/rest/workspaces/${workspaceName}/styles/${styleName}`
       )
-      // If no error is thrown, the style exists. Update it.
       console.log(`[GeoServer] Style exists. Updating: ${styleName}`)
       await geoserver.put(
         `/rest/workspaces/${workspaceName}/styles/${styleName}`,
@@ -60,7 +94,7 @@ export async function createStyle(
     } catch (err) {}
 
     try {
-      console.log(`[GeoServer] Style does not exists, creating new one`)
+      console.log(`[GeoServer] Style does not exist, creating new one`)
 
       await geoserver.post(`/rest/workspaces/${workspaceName}/styles`, style, {
         headers: {
