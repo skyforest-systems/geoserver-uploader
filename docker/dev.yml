@@ -72,6 +72,7 @@ services:
     volumes:
       - ../geoserver:/opt/geoserver_data
       - ../uploader/files:/files 
+      - ../uploader/output:/output 
     networks:
       - skyforest-systems
   

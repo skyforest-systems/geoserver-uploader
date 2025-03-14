@@ -2,6 +2,7 @@ import path from 'path'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import { DatasetStructure } from '../interfaces'
+import ensureDirectory from '../utils/ensureDirectory'
 
 const execPromise = promisify(exec)
 
@@ -30,7 +31,9 @@ export default async function processVector(structure: DatasetStructure) {
   const basepath = dir.split('/').slice(0, -1).join('/')
 
   const inputShapefilePath = dir + '.shp'
-  const outputShapefilePath = path.join(basepath, `${dataset}_output.shp`)
+  const outputDir = basepath.replace('files', 'output')
+  await ensureDirectory(outputDir)
+  const outputShapefilePath = path.join(outputDir, `${dataset}_output.shp`)
 
   try {
     console.log(

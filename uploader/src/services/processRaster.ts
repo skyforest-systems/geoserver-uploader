@@ -3,6 +3,7 @@ import path from 'path'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import { DatasetStructure } from '../interfaces'
+import ensureDirectory from '../utils/ensureDirectory'
 
 const execPromise = promisify(exec)
 
@@ -12,9 +13,11 @@ export default async function processRaster(structure: DatasetStructure) {
   )
 
   const { dir, dataset } = structure
-  const vrtPath = path.join(dir, 'raster_output.vrt')
-  const tifPath = path.join(dir, 'raster_output.tif')
-  const fileListPath = path.join(dir, 'file_list.txt')
+  const outputDir = dir.replace('files', 'output')
+  await ensureDirectory(outputDir)
+  const vrtPath = path.join(outputDir, 'raster_output.vrt')
+  const tifPath = path.join(outputDir, 'raster_output.tif')
+  const fileListPath = path.join(outputDir, 'file_list.txt')
 
   try {
     // 1. Find all JPG files and write to file_list.txt

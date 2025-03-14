@@ -3,6 +3,7 @@ import path from 'path'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import { DatasetStructure } from '../interfaces'
+import ensureDirectory from '../utils/ensureDirectory'
 
 const execPromise = promisify(exec)
 
@@ -13,8 +14,10 @@ export default async function processAnalysis(structure: DatasetStructure) {
 
   const { dir, dataset } = structure
   const inputPath = dir + '.tif'
-  const tifPath = dir + '_output.tif'
-  const fileListPath = path.join(dir, 'file_list.txt')
+  const outputDir = dir.replace('files', 'output')
+  await ensureDirectory(outputDir)
+  const tifPath = outputDir + '_output.tif'
+  const fileListPath = path.join(outputDir, 'file_list.txt')
 
   try {
     console.log(
