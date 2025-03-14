@@ -132,6 +132,19 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - skyforest-systems
+  
+  filebrowser:
+    container_name: filebrowser
+    hostname: filebrowser
+    image: filebrowser/filebrowser
+    restart: always
+    user: "${UID}:${GID}"
+    ports:
+      - 8081:80
+    volumes:
+      - C:/skyforest-uploader/filebrowser/filebrowser.db:/database.db
+      - C:/skyforest-uploader/filebrowser/.filebrowser.json:/.filebrowser.json
+      - D:/GEOSERVER_DATA:/srv
 
 volumes:
   redis-insight:
