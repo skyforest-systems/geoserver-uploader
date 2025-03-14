@@ -19,7 +19,7 @@ const cache = apicache.middleware("10 minutes");
 // Proxy Middleware
 app.use("/:geoserverPath(*)", cache, (req: Request, res: Response, next) => {
   const originalUrl = new URL(
-    req.protocol + "://" + req.get("host") + req.originalUrl
+    req.protocol + "://" + req.get("host") + req.originalUrl,
   );
   const geoserverPath = req.params.geoserverPath;
   const username = originalUrl.searchParams.get("username");
@@ -30,8 +30,8 @@ app.use("/:geoserverPath(*)", cache, (req: Request, res: Response, next) => {
       .status(401)
       .send(
         render401(
-          `https://map.skyforest.se/geoserver/${geoserverPath}${originalUrl.search}`
-        )
+          `https://map.skyforest.se/geoserver/${geoserverPath}${originalUrl.search}`,
+        ),
       );
     return;
   }
@@ -43,12 +43,12 @@ app.use("/:geoserverPath(*)", cache, (req: Request, res: Response, next) => {
   console.log(
     `[${new Date().toISOString()}] [PROXY] Forwarding to ${GEOSERVER_URL}/${geoserverPath}${
       originalUrl.search
-    }`
+    }`,
   );
 
   // Encode credentials in Basic Auth format
   const authHeader = `Basic ${Buffer.from(`${username}:${password}`).toString(
-    "base64"
+    "base64",
   )}`;
 
   const proxy = createProxyMiddleware({
@@ -70,6 +70,6 @@ app.use("/:geoserverPath(*)", cache, (req: Request, res: Response, next) => {
 
 app.listen(PORT, () => {
   console.log(
-    `[${new Date().toISOString()}] Server running on http://localhost:${PORT} and proxying requests to ${GEOSERVER_URL}`
+    `[${new Date().toISOString()}] Server running on http://localhost:${PORT} and proxying requests to ${GEOSERVER_URL}`,
   );
 });

@@ -1,35 +1,35 @@
-import fs from "fs";
-import path from "path";
+import fs from 'fs'
+import path from 'path'
 
 export default function countTotalFiles(
   dir: string,
   extensions?: string[]
 ): number {
   try {
-    let fileCount = 0;
+    let fileCount = 0
 
-    const files = fs.readdirSync(dir, { withFileTypes: true });
+    const files = fs.readdirSync(dir, { withFileTypes: true })
 
     files.forEach((file) => {
-      const fullPath = path.join(dir, file.name);
+      const fullPath = path.join(dir, file.name)
 
       if (file.isDirectory()) {
         // Recursively count files in subdirectories
-        fileCount += countTotalFiles(fullPath);
+        fileCount += countTotalFiles(fullPath)
       } else if (file.isFile()) {
         if (extensions) {
-          const fileExtension = "." + file.name.split(".").pop();
+          const fileExtension = '.' + file.name.split('.').pop()
           if (extensions.includes(fileExtension)) {
-            fileCount++;
+            fileCount++
           }
         } else {
-          fileCount++;
+          fileCount++
         }
       }
-    });
+    })
 
-    return fileCount;
+    return fileCount
   } catch (error) {
-    return 0;
+    return 0
   }
 }

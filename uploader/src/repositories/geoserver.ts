@@ -1,17 +1,17 @@
-import axios from "axios";
-import environments from "../environments";
-import curlirize from "axios-curlirize";
+import axios from 'axios'
+import environments from '../environments'
+import curlirize from 'axios-curlirize'
 
 const geoserver = axios.create({
   baseURL: environments.geoserverUrl,
   headers: {
     Authorization:
-      "Basic " +
+      'Basic ' +
       Buffer.from(
         `${environments.geoserverUsername}:${environments.geoserverPassword}`
-      ).toString("base64"),
+      ).toString('base64'),
   },
-});
-curlirize(geoserver);
+})
+curlirize(geoserver)
 
-export default geoserver;
+export default geoserver

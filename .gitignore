@@ -1,2 +1,3 @@
 geoserver/
 !/geoserver/Dockerfile.geoserver
+node_modules/

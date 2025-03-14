@@ -12,7 +12,7 @@ export interface Workspace {
 }
 
 export async function getWorkspaces(
-  user?: string
+  user?: string,
 ): Promise<Workspace[] | undefined> {
   try {
     const response = await fetch("/api/get-workspaces");
@@ -26,7 +26,7 @@ export async function getWorkspaces(
 
     if (user) {
       return data.workspaces.workspace.filter((workspace) =>
-        workspace.name.includes(user)
+        workspace.name.includes(user),
       );
     } else {
       return data.workspaces.workspace;

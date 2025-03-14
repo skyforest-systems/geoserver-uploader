@@ -1,4 +1,4 @@
-import geoserver from "../repositories/geoserver";
+import geoserver from '../repositories/geoserver'
 
 /**
  * Create a new store in GeoServer, removing it first if it already exists.
@@ -11,19 +11,19 @@ export async function createStore(
   storeName: string,
   filePath: string
 ) {
-  workspaceName = workspaceName.toLowerCase().replace(/ /g, "_");
-  storeName = storeName.toLowerCase().replace(/ /g, "_");
+  workspaceName = workspaceName.toLowerCase().replace(/ /g, '_')
+  storeName = storeName.toLowerCase().replace(/ /g, '_')
   try {
     // Check if the store exists
-    const storeUrl = `/rest/workspaces/${workspaceName}/coveragestores/${storeName}`;
+    const storeUrl = `/rest/workspaces/${workspaceName}/coveragestores/${storeName}`
     try {
-      const existsResponse = await geoserver.get(storeUrl);
+      const existsResponse = await geoserver.get(storeUrl)
       if (existsResponse.status === 200) {
         console.log(
           `[GeoServer] Store already exists: ${storeName}. Removing it.`
-        );
-        await geoserver.delete(storeUrl + "?recurse=true");
-        console.log(`[GeoServer] Store removed: ${storeName}`);
+        )
+        await geoserver.delete(storeUrl + '?recurse=true')
+        console.log(`[GeoServer] Store removed: ${storeName}`)
       }
     } catch (checkError) {}
 
@@ -33,17 +33,17 @@ export async function createStore(
       {
         coverageStore: {
           name: storeName,
-          type: "GeoTIFF",
+          type: 'GeoTIFF',
           enabled: true,
           workspace: workspaceName,
-          url: "file:///" + filePath,
+          url: 'file:///' + filePath,
         },
       }
-    );
-    console.log(`[GeoServer] Store created: ${storeName}`);
-    return response.data;
+    )
+    console.log(`[GeoServer] Store created: ${storeName}`)
+    return response.data
   } catch (error) {
-    console.error(`[GeoServer] Error creating store: ${error}`);
-    throw error;
+    console.error(`[GeoServer] Error creating store: ${error}`)
+    throw error
   }
 }
