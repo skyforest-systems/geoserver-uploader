@@ -138,7 +138,7 @@ services:
     hostname: filebrowser
     image: filebrowser/filebrowser
     restart: always
-    user: "${UID}:${GID}"
+    user: "1000:1000"
     ports:
       - 8081:80
     volumes:
