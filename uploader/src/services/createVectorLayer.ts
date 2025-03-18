@@ -1,4 +1,4 @@
-import geoserver from "../repositories/geoserver";
+import geoserver from '../repositories/geoserver'
 
 /**
  * Create a new vector layer in GeoServer.
@@ -15,10 +15,10 @@ export async function createVectorLayer(
   styleName: string,
   nativeName: string
 ) {
-  workspaceName = workspaceName.toLowerCase().replace(/ /g, "_");
-  storeName = storeName.toLowerCase().replace(/ /g, "_");
-  layerName = layerName.toLowerCase().replace(/ /g, "_");
-  styleName = styleName.toLowerCase().replace(/ /g, "_");
+  workspaceName = workspaceName.toLowerCase().replace(/ /g, '_')
+  storeName = storeName.toLowerCase().replace(/ /g, '_')
+  layerName = layerName.toLowerCase().replace(/ /g, '_')
+  styleName = styleName.toLowerCase().replace(/ /g, '_')
 
   try {
     // Create the layer in GeoServer
@@ -29,19 +29,19 @@ export async function createVectorLayer(
           name: layerName,
           nativeName: nativeName,
           title: layerName,
-          srs: "EPSG:4326",
+          srs: 'EPSG:4326',
           enabled: true,
           advertised: false,
         },
       },
       {
         headers: {
-          "Content-Type": `application/json`,
+          'Content-Type': `application/json`,
         },
       }
-    );
+    )
 
-    console.log(`[GeoServer] Vector layer created: ${layerName}`);
+    console.log(`[GeoServer] Vector layer created: ${layerName}`)
 
     // Apply the style to the created layer
     await geoserver.put(
@@ -55,21 +55,21 @@ export async function createVectorLayer(
       },
       {
         headers: {
-          "Content-Type": `application/json`,
+          'Content-Type': `application/json`,
         },
       }
-    );
+    )
 
     console.log(
       `[GeoServer] Style applied to vector layer: ${styleName} -> ${layerName}`
-    );
+    )
 
     return {
       layerName,
       styleName,
-    };
+    }
   } catch (error) {
-    console.error(`[GeoServer] Error creating vector layer: ${error}`);
-    throw error;
+    console.error(`[GeoServer] Error creating vector layer: ${error}`)
+    throw error
   }
 }

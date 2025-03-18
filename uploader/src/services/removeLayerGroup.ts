@@ -1,4 +1,4 @@
-import geoserver from "../repositories/geoserver";
+import geoserver from '../repositories/geoserver'
 
 /**
  * Remove a layer group in GeoServer if it exists.
@@ -9,27 +9,27 @@ export async function removeLayerGroup(
   groupName: string,
   workspaceName: string
 ) {
-  workspaceName = workspaceName.toLowerCase().replace(/ /g, "_");
-  groupName = groupName.toLowerCase().replace(/ /g, "_");
+  workspaceName = workspaceName.toLowerCase().replace(/ /g, '_')
+  groupName = groupName.toLowerCase().replace(/ /g, '_')
   try {
-    const groupUrl = `/rest/workspaces/${workspaceName}/layergroups/${groupName}`;
+    const groupUrl = `/rest/workspaces/${workspaceName}/layergroups/${groupName}`
 
     // Check if the layer group exists
     try {
-      const existsResponse = await geoserver.get(groupUrl);
+      const existsResponse = await geoserver.get(groupUrl)
       if (existsResponse.status === 200) {
         console.log(
           `[GeoServer] Layer group exists: ${groupName}. Removing it.`
-        );
-        await geoserver.delete(groupUrl);
-        console.log(`[GeoServer] Layer group removed: ${groupName}`);
+        )
+        await geoserver.delete(groupUrl)
+        console.log(`[GeoServer] Layer group removed: ${groupName}`)
       }
     } catch (checkError) {
       console.log(
         `[GeoServer] Layer group does not exist or error checking existence: ${checkError}`
-      );
+      )
     }
   } catch (error) {
-    console.warn(`[GeoServer] Error removing layer group: ${error}`);
+    console.warn(`[GeoServer] Error removing layer group: ${error}`)
   }
 }

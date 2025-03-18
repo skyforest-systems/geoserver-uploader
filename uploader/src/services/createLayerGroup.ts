@@ -1,4 +1,4 @@
-import geoserver from "../repositories/geoserver";
+import geoserver from '../repositories/geoserver'
 
 /**
  * Create a new layer group in GeoServer, removing it first if it already exists.
@@ -13,23 +13,23 @@ export async function createLayerGroup(
   layers: { name: string; href: string }[],
   styles: { name: string }[]
 ) {
-  workspaceName = workspaceName.toLowerCase().replace(/ /g, "_");
-  groupName = groupName.toLowerCase().replace(/ /g, "_");
+  workspaceName = workspaceName.toLowerCase().replace(/ /g, '_')
+  groupName = groupName.toLowerCase().replace(/ /g, '_')
   layers = layers.map((layer) => {
-    return { ...layer, name: layer.name.toLowerCase().replace(/ /g, "_") };
-  });
+    return { ...layer, name: layer.name.toLowerCase().replace(/ /g, '_') }
+  })
   try {
-    const groupUrl = `/rest/workspaces/${workspaceName}/layergroups/${groupName}`;
+    const groupUrl = `/rest/workspaces/${workspaceName}/layergroups/${groupName}`
 
     // Check if the layer group exists
     try {
-      const existsResponse = await geoserver.get(groupUrl);
+      const existsResponse = await geoserver.get(groupUrl)
       if (existsResponse.status === 200) {
         console.log(
           `[GeoServer] Layer group already exists: ${groupName}. Removing it.`
-        );
-        await geoserver.delete(groupUrl);
-        console.log(`[GeoServer] Layer group removed: ${groupName}`);
+        )
+        await geoserver.delete(groupUrl)
+        console.log(`[GeoServer] Layer group removed: ${groupName}`)
       }
     } catch (checkError) {}
 
@@ -39,7 +39,7 @@ export async function createLayerGroup(
       {
         layerGroup: {
           name: groupName,
-          mode: "SINGLE",
+          mode: 'SINGLE',
           title: groupName,
           workspace: {
             name: workspaceName,
@@ -52,12 +52,12 @@ export async function createLayerGroup(
           },
         },
       }
-    );
+    )
 
-    console.log(`[GeoServer] Layer group created: ${groupName}`);
-    return response.data;
+    console.log(`[GeoServer] Layer group created: ${groupName}`)
+    return response.data
   } catch (error) {
-    console.error(`[GeoServer] Error creating layer group: ${error}`);
-    throw error;
+    console.error(`[GeoServer] Error creating layer group: ${error}`)
+    throw error
   }
 }

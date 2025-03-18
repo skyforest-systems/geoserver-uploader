@@ -1,61 +1,68 @@
-import fs from "fs";
-import path from "path";
-import { exec } from "child_process";
-import { promisify } from "util";
-import { DatasetStructure } from "../interfaces";
+import fs from 'fs'
+import path from 'path'
+import { exec } from 'child_process'
+import { promisify } from 'util'
+import { DatasetStructure } from '../interfaces'
+import ensureDirectory from '../utils/ensureDirectory'
 
-const execPromise = promisify(exec);
+const execPromise = promisify(exec)
 
-/**
- * Processes a single analysis TIF file in a specified directory.
- * Standardizes the TIF to EPSG:3006, applies compression, creates tiles,
- * and generates pyramids (overviews). If multiple TIF files are found, the function ignores them.
- *
- * @param {DatasetStructure} structure - The dataset structure containing directory information.
- * @param {string} structure.dir - The directory where the TIF file is located.
- *
- * @throws {Error} If no TIF files or more than one TIF file are found in the directory, or if processing fails.
- *
- * @returns {Promise<string>} The path of the processed TIF file.
- */
 export default async function processAnalysis(structure: DatasetStructure) {
   console.log(
-    `[process-analysis-service] Processing analysis TIF in ${structure.dir}`
-  );
+    `[process-analysis-service] processing analysis dataset in ${structure.dir}`
+  )
 
-  const { dir } = structure;
+  const { dir, dataset } = structure
+  const inputPath = dir + '.tif'
+  const outputDir = dir.replace('files', 'output')
+  await ensureDirectory(outputDir)
+  const tifPath = outputDir + '_output.tif'
+  const fileListPath = path.join(outputDir, 'file_list.txt')
 
   try {
-    const inputTifPath = dir;
-    const outputTifPath = inputTifPath.split(".tif")[0] + "_output.tif"; // Output overwrites the input file
-
     console.log(
-      `[process-analysis-service] Standardizing TIF file: ${inputTifPath}`
-    );
+      `[process-analysis-service] Extracting band names from: ${inputPath}`
+    )
+    const { stdout: metadata } = await execPromise(
+      `gdalinfo -json "${inputPath}"`
+    )
+    const originalMetadata = JSON.parse(metadata)
 
-    // Standardize the TIF to EPSG:3006 and apply compression
+    console.log(`[process-analysis-service] Generating TIF file: ${tifPath}`)
     await execPromise(
-      `gdal_translate "${inputTifPath}" "${outputTifPath}" -a_srs EPSG:3006 -co COMPRESS=JPEG -co BIGTIFF=YES -co TILED=YES -co NUM_THREADS=8 -a_nodata 0`
-    );
+      `gdal_translate "${inputPath}" "${tifPath}" -a_srs EPSG:3006 -co COMPRESS=DEFLATE -co BIGTIFF=YES -co TILED=YES -co NUM_THREADS=8 -a_nodata 0`
+    )
 
     console.log(
-      `[process-analysis-service] Adding pyramids to TIF file: ${outputTifPath}`
-    );
+      `[process-analysis-service] Restoring band names to: ${tifPath}`
+    )
+    for (let i = 0; i < originalMetadata.bands.length; i++) {
+      const bandName = originalMetadata.bands[i].description || `Band_${i + 1}`
+      await execPromise(
+        `gdal_edit.py -mo "BAND_NAME_${i + 1}=${bandName}" "${tifPath}"`
+      )
+    }
 
-    // Add overviews to the TIF file
+    console.log(
+      `[process-analysis-service] Adding overviews to TIF file: ${tifPath}`
+    )
     await execPromise(
-      `gdaladdo -r average "${outputTifPath}" --config GDAL_NUM_THREADS 8 --config BIGTIFF_OVERVIEW IF_NEEDED`
-    );
+      `gdaladdo -r average "${tifPath}" --config GDAL_NUM_THREADS 8 --config BIGTIFF_OVERVIEW IF_NEEDED`
+    )
 
     console.log(
-      `[process-analysis-service] Finished processing analysis TIF: ${outputTifPath}`
-    );
+      `[process-analysis-service] Finished processing analysis dataset in ${dir}`
+    )
 
-    return outputTifPath;
+    return tifPath
   } catch (error) {
     console.error(
-      `[process-analysis-service] Error processing analysis TIF: ${error}`
-    );
-    throw error;
+      `[process-analysis-service] Error processing analysis dataset: ${error}`
+    )
+    throw error
+  } finally {
+    if (fs.existsSync(fileListPath)) {
+      fs.unlinkSync(fileListPath)
+    }
   }
 }

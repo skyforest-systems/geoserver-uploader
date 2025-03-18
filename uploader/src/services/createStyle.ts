@@ -1,109 +1,113 @@
-import fs from "fs";
-import path from "path";
-import geoserver from "../repositories/geoserver";
-import { DatasetStructure } from "../interfaces";
+import geoserver from '../repositories/geoserver'
+import { DatasetStructure } from '../interfaces'
+import { xml2js, js2xml } from 'xml-js'
 
-/**
- * Creates or updates a style in GeoServer based on an SLD file located in the specified directory.
- * If the style exists, updates it. If no SLD file is found, downloads the default point style from GeoServer, modifies it, and uploads it as a new style.
- *
- * @param {string} workspaceName - The name of the workspace in GeoServer.
- * @param {string} styleName - The name of the style to create or update.
- * @param {DatasetStructure} structure - The dataset structure containing directory information.
- * @param {string} structure.dir - The directory where the SLD file might be located.
- *
- * @throws {Error} If unable to create or update the style in GeoServer.
- *
- * @returns {Promise<string>} The name of the created or updated style.
- */
 export async function createStyle(
   workspaceName: string,
   styleName: string,
-  structure: DatasetStructure
+  structure: DatasetStructure,
+  styleContent: string
 ) {
-  const { dir, dataset } = structure;
-  workspaceName = workspaceName.toLowerCase().replace(/ /g, "_");
-  styleName = styleName.toLowerCase().replace(/ /g, "_");
+  const { dir } = structure
+  workspaceName = workspaceName.toLowerCase().replace(/ /g, '_')
+  styleName = styleName.toLowerCase().replace(/ /g, '_')
 
-  const sldInput = dir.replace("shp", "sld");
+  const xmlStyle: any = xml2js(styleContent, { compact: true })
 
-  try {
-    let sldContent;
+  function ensurePath(obj: any, path: string[]) {
+    return path.reduce((acc, key, index) => {
+      if (!acc[key]) {
+        acc[key] = index === path.length - 1 ? { _text: '' } : {}
+      }
+      return acc[key]
+    }, obj)
+  }
 
-    // check if the sld file exists, if not, download the default one
-    const sldFile = fs.existsSync(sldInput);
-
-    if (sldFile) {
-      sldContent = fs.readFileSync(sldInput, "utf-8");
-    } else {
-      // Download the default point SLD from GeoServer
-      console.log(
-        `[GeoServer] No SLD file found with the ame ${sldInput}. Fetching default point style.`
-      );
-      const defaultStyleResponse = await geoserver.get(
-        `/rest/styles/point.sld`,
-        { responseType: "text" }
-      );
-
-      sldContent = defaultStyleResponse.data;
-
-      // Update the default SLD content with the new style name
-      sldContent = sldContent.replace(
-        /<sld:Name>.*?<\/sld:Name>/,
-        `<sld:Name>${styleName}</sld:Name>`
-      );
+  if (styleContent.includes('se:Name')) {
+    try {
+      ensurePath(xmlStyle, ['StyledLayerDescriptor', 'NamedLayer', 'se:Name'])[
+        '_text'
+      ] = styleName
+    } catch (error) {
+      console.warn(
+        `[createStyle] Couldn't redefine styleName at 'se:Name', going with default`
+      )
     }
 
-    // Check if style exists
-    console.log(`[GeoServer] Checking if style exists: ${styleName}`);
+    try {
+      ensurePath(xmlStyle, [
+        'StyledLayerDescriptor',
+        'NamedLayer',
+        'UserStyle',
+        'se:Name',
+      ])['_text'] = styleName
+    } catch {
+      console.warn(
+        `[createStyle] Couldn't redefine styleName at 'UserStyle.se:Name', going with default`
+      )
+    }
+  } else {
+    try {
+      ensurePath(xmlStyle, [
+        'StyledLayerDescriptor',
+        'NamedLayer',
+        'UserStyle',
+        'Name',
+      ])['_text'] = styleName
+    } catch {
+      console.warn(
+        `[createStyle] Couldn't redefine styleName at 'UserStyle.Name', going with default`
+      )
+    }
+
+    try {
+      ensurePath(xmlStyle, ['StyledLayerDescriptor', 'NamedLayer', 'Name'])[
+        '_text'
+      ] = styleName
+    } catch {
+      console.warn(
+        `[createStyle] Couldn't redefine styleName at 'NamedLayer.Name', going with default`
+      )
+    }
+  }
+
+  const style = js2xml(xmlStyle, { compact: true })
+
+  try {
+    console.log(`[GeoServer] Checking if style exists: ${styleName}`)
     try {
       await geoserver.get(
         `/rest/workspaces/${workspaceName}/styles/${styleName}`
-      );
-      // If no error is thrown, the style exists. Update it.
-      console.log(`[GeoServer] Style exists. Updating: ${styleName}`);
+      )
+      console.log(`[GeoServer] Style exists. Updating: ${styleName}`)
       await geoserver.put(
         `/rest/workspaces/${workspaceName}/styles/${styleName}`,
-        sldContent,
+        style,
         {
           headers: {
-            "Content-Type": "application/vnd.ogc.sld+xml",
+            'Content-Type': 'application/vnd.ogc.sld+xml',
           },
         }
-      );
-      console.log(`[GeoServer] Style updated: ${styleName}`);
-      return styleName;
+      )
+      console.log(`[GeoServer] Style updated: ${styleName}`)
+      return styleName
     } catch (err) {}
 
     try {
-      console.log(`[GeoServer] Style does not exists, creating new one`);
-      await geoserver.post(
-        `/rest/workspaces/${workspaceName}/styles`,
-        `<style><name>${styleName}</name><filename>${styleName}.sld</filename></style>`,
-        {
-          headers: {
-            "Content-Type": "application/xml",
-          },
-        }
-      );
+      console.log(`[GeoServer] Style does not exist, creating new one`)
 
-      console.log(`[GeoServer] Uploading contents to style: ${styleName}`);
-      await geoserver.put(
-        `/rest/workspaces/${workspaceName}/styles/${styleName}`,
-        sldContent,
-        {
-          headers: {
-            "Content-Type": "application/vnd.ogc.sld+xml",
-          },
-        }
-      );
-      console.log(`[GeoServer] Style created: ${styleName}`);
-      return styleName;
+      await geoserver.post(`/rest/workspaces/${workspaceName}/styles`, style, {
+        headers: {
+          'Content-Type': 'application/vnd.ogc.sld+xml',
+        },
+      })
+      console.log(`[GeoServer] Style created: ${styleName}`)
+      return styleName
     } catch (error) {
-      throw error;
+      throw error
     }
   } catch (error) {
-    console.error(`[GeoServer] Error creating or updating style: ${error}`);
-    throw error;
+    console.error(`[GeoServer] Error creating or updating style: ${error}`)
+    throw error
   }
 }
