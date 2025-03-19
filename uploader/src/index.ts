@@ -66,6 +66,7 @@ app.listen(port, async () => {
   const watcher = chokidar.watch(folderPath, {
     ignoreInitial: false,
     persistent: true,
+    usePolling: true
   })
 
   let isChokidarReady = false
