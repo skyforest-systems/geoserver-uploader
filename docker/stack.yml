@@ -44,7 +44,7 @@ services:
       - ANALYSIS_EXTENSIONS=.tif,.geotiff,.tiff
     restart: always
     volumes:
-      - D:/GEOSERVER_DATA:/app/files
+      - D:/GEOSERVER_DATA:/app/output
       - skyport:/app/files
     networks:
       - skyforest-systems
@@ -94,7 +94,7 @@ services:
       - 8080:8080
     volumes:
       - C:/skyforest-uploader/geoserver:/opt/geoserver_data
-      - D:/GEOSERVER_DATA:/files 
+      - D:/GEOSERVER_DATA:/output 
       - skyport:/files
     networks:
       - skyforest-systems
