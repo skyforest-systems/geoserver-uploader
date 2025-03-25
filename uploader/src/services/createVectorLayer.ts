@@ -1,4 +1,4 @@
-import geoserver from '../repositories/geoserver'
+import geoserver from '../config/geoserver'
 
 /**
  * Create a new vector layer in GeoServer.

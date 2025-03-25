@@ -43,6 +43,8 @@ services:
       - POINTS_EXTENSIONS=.geojson,.shp,.kml,.sld
       - ANALYSIS_EXTENSIONS=.tif,.geotiff,.tiff
       - DEBUG=true
+      - FILE_ANALYSIS_WORKERS=2
+      - FILE_PROCESSING_WORKERS=2
     restart: always
     volumes:
       - D:/GEOSERVER_DATA:/app/output

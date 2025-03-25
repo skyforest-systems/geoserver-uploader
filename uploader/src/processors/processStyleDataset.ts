@@ -1,10 +1,10 @@
 import { DatasetStructure } from '../interfaces'
+import { createLayerGroup } from '../services/createLayerGroup'
+import { createStyle } from '../services/createStyle'
 import { acquireLock, releaseLock } from '../repositories/db'
-import { createLayerGroup } from './createLayerGroup'
-import { createStyle } from './createStyle'
-import getGeoserverNames from './getGeoserverNames'
-import { getLayersFromWorkspace } from './getLayersFromWorkspace'
-import readStyle from './readStyle'
+import getGeoserverNames from '../services/getGeoserverNames'
+import { getLayersFromWorkspace } from '../services/getLayersFromWorkspace'
+import readStyle from '../services/readStyle'
 
 export default async function processStyleDataset(structure: DatasetStructure) {
   const now = Date.now()

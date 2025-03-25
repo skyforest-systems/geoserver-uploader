@@ -1,15 +1,15 @@
-import { DatasetStructure } from '../interfaces'
+import { DatasetStructure } from '../src/interfaces'
+import { createLayer } from '../src/services/createLayer'
+import { createStore } from '../src/services/createStore'
+import { createWorkspace } from '../src/services/createWorkspace'
 import {
   acquireLock,
-  changeFileStatusByBasepath,
   getFilesByPattern,
+  changeFileStatusByBasepath,
   releaseLock,
-} from '../repositories/db'
-import { createWorkspace } from './createWorkspace'
-import getGeoserverNames from './getGeoserverNames'
-import processAnalysis from './processAnalysis'
-import { createStore } from './createStore'
-import { createLayer } from './createLayer'
+} from '../src/repositories/db'
+import getGeoserverNames from '../src/services/getGeoserverNames'
+import processAnalysis from '../src/services/processAnalysis'
 
 export default async function processAnalysisDataset(
   structure: DatasetStructure

@@ -1,5 +1,5 @@
 import axios from 'axios'
-import environments from '../environments'
+import environments from './environments'
 import curlirize from 'axios-curlirize'
 
 const geoserver = axios.create({

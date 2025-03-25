@@ -1,7 +1,7 @@
 import { DatasetStructure } from '../interfaces'
 import * as fs from 'fs'
 import path from 'path'
-import environments from '../environments'
+import environments from '../config/environments'
 
 export function checkStructure(
   origin: string,

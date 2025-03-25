@@ -1,17 +1,15 @@
 import { DatasetStructure } from '../interfaces'
+import { createShapefileStore } from '../services/createShapefileStore'
+import { createVectorLayer } from '../services/createVectorLayer'
+import { createWorkspace } from '../services/createWorkspace'
 import {
   acquireLock,
-  changeFileStatusByBasepath,
   getFilesByPattern,
+  changeFileStatusByBasepath,
   releaseLock,
 } from '../repositories/db'
-import { createShapefileStore } from './createShapefileStore'
-import { createDefaultStyle } from './createDefaultStyle'
-import { createVectorLayer } from './createVectorLayer'
-import { createWorkspace } from './createWorkspace'
-import getGeoserverNames from './getGeoserverNames'
-import processVector from './processVector'
-import { createLayerGroup } from './createLayerGroup'
+import getGeoserverNames from '../services/getGeoserverNames'
+import processVector from '../services/processVector'
 
 export default async function processVectorDataset(
   structure: DatasetStructure
