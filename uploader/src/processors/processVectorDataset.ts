@@ -10,6 +10,7 @@ import {
 } from '../repositories/db'
 import getGeoserverNames from '../services/getGeoserverNames'
 import processVector from '../services/processVector'
+import { enqueueForFileProcessing } from '../queues/queueManager'
 
 export default async function processVectorDataset(
   structure: DatasetStructure
@@ -79,6 +80,7 @@ export default async function processVectorDataset(
 
     for (const style of stylesToRecreate) {
       await changeFileStatusByBasepath(style.basepath, 'queued')
+      await enqueueForFileProcessing(style.structure)
     }
   } catch (error) {
     throw error

@@ -10,6 +10,7 @@ import {
 } from '../repositories/db'
 import getGeoserverNames from '../services/getGeoserverNames'
 import processAnalysis from '../services/processAnalysis'
+import { enqueueForFileProcessing } from '../queues/queueManager'
 
 export default async function processAnalysisDataset(
   structure: DatasetStructure
@@ -65,6 +66,7 @@ export default async function processAnalysisDataset(
 
     for (const style of stylesToRecreate) {
       await changeFileStatusByBasepath(style.basepath, 'queued')
+      await enqueueForFileProcessing(style.structure)
     }
   } catch (error) {
     throw error
