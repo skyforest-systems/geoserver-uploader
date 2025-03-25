@@ -7,217 +7,130 @@ export function checkStructure(
   origin: string,
   isUnlink?: boolean
 ): DatasetStructure | null {
-  const structure = () => {
-    const BASEPATH = 'files'
+  const BASEPATH = 'files'
+  let folderStructure = origin.replace(/\\/g, '/').split('/')
 
-    let folderStructure: Array<string>
-    if (isUnlink) {
-      folderStructure = (
-        BASEPATH +
-        '/' +
-        origin.replace(/\\/g, '/').split(BASEPATH + '/')[1]
-      ).split('/')
-    } else {
-      folderStructure = origin.replace(/\\/g, '/').split('/')
-    }
-
-    const indexOfRaster = folderStructure
-      .map((e) => e.toLowerCase())
-      .indexOf('raster')
-    const indexOfPoints = folderStructure
-      .map((e) => e.toLowerCase())
-      .indexOf('points')
-    const indexOfAnalysis = folderStructure
-      .map((e) => e.toLowerCase())
-      .indexOf('analysis')
-    const indexOfStyles = folderStructure
-      .map((e) => e.toLowerCase())
-      .indexOf('styles')
-
-    let typeIndex
-
-    if (origin.includes('styles')) typeIndex = indexOfStyles
-    else {
-      typeIndex = [indexOfRaster, indexOfPoints, indexOfAnalysis].find(
-        (e) => e !== -1
-      )
-    }
-
-    if (!typeIndex || typeIndex === -1) {
-      return null
-    }
-
-    try {
-      const customer = folderStructure[typeIndex - 2]
-      const year = folderStructure[typeIndex - 1]
-      const type = folderStructure[typeIndex]
-
-      // folder structure for rasters:
-      // <custome>/<year>/raster/<dataset>/<file>
-      if (type.toLowerCase() === 'raster') {
-        const dataset = folderStructure[typeIndex + 1]
-        const dir = [BASEPATH, customer, year, type, dataset].join(`/`)
-
-        if (!folderStructure.join(`/`).includes(dir))
-          throw new Error(
-            `Invalid folder structure for ${origin}, expected ${dir}`
-          )
-
-        // skips the isFolder check if isUnlink is provided, since the file wont exist to be checked
-        if (!isUnlink) {
-          const isFolder = fs.lstatSync(dir).isDirectory()
-
-          if (!isFolder) {
-            console.warn(
-              `Invalid file structure for ${dir}, expected a folder, but it's a file`
-            )
-            return null
-          }
-        }
-
-        return {
-          customer,
-          year,
-          type: 'raster',
-          dataset,
-          dir: dir,
-        }
-      }
-
-      // folder structure for points:
-      // <customer>/<year>/points/<dataset>
-      // in that case, the dataset is the name of the file minus the extension
-      // since a shapefile will have multiple files with the same name but different
-      // extensions
-      if (type.toLowerCase() === 'points') {
-        const dataset = folderStructure[typeIndex + 1].split('.')[0]
-        const extension = `.` + folderStructure[typeIndex + 1].split('.')[1]
-
-        if (!environments.pointsExtensions.includes(extension)) {
-          // console.warn(
-          //   `[check-structure] Invalid file extension for ${origin}, expected one of ${environments.pointsExtensions.join(
-          //     ', '
-          //   )}`
-          // )
-          return null
-        }
-
-        const dir = [BASEPATH, customer, year, type, dataset].join(`/`)
-
-        // skips the isFolder check if isUnlink is provided, since the file wont exist to be checked
-        if (!isUnlink) {
-          const isFolder = fs
-            .lstatSync(path.join(dir + extension))
-            .isDirectory()
-
-          if (isFolder) {
-            console.warn(
-              `Invalid file structure for ${dir}, expected a file, but it's a folder`
-            )
-            return null
-          }
-        }
-
-        if (!folderStructure.join(`/`).includes(path.join(dir)))
-          throw new Error(
-            `Invalid folder structure for ${origin}, expected ${dir}`
-          )
-
-        return {
-          customer,
-          year,
-          type: 'points',
-          dataset,
-          dir: dir,
-        }
-      }
-
-      // folder structure for analysis:
-      // <customer>/<year>/analysis/<dataset>
-      if (type.toLowerCase() === 'analysis') {
-        const dataset = folderStructure[typeIndex + 1].split('.')[0]
-        const extension = `.` + folderStructure[typeIndex + 1].split('.')[1]
-
-        if (!environments.analysisExtensions.includes(extension)) {
-          // console.warn(
-          //   `[check-structure] Invalid file extension for ${origin}, expected one of ${environments.analysisExtensions.join(
-          //     ', '
-          //   )}`
-          // )
-          return null
-        }
-
-        const dir = [BASEPATH, customer, year, type, dataset].join(`/`)
-
-        // skips the isFolder check if isUnlink is provided, since the file wont exist to be checked
-        if (!isUnlink) {
-          const isFolder = fs
-            .lstatSync(path.join(dir + extension))
-            .isDirectory()
-
-          if (isFolder) {
-            console.warn(
-              `Invalid file structure for ${dir}, expected a file, but it's a folder`
-            )
-            return null
-          }
-        }
-
-        if (!folderStructure.join(`/`).includes(path.join(dir)))
-          throw new Error(
-            `Invalid folder structure for ${origin}, expected ${dir}`
-          )
-
-        return {
-          customer,
-          year,
-          type: 'analysis',
-          dataset,
-          dir: dir,
-        }
-      }
-
-      // folder structure for styles can be either:
-      // - <customer>/<year>/styles/points/<dataset>
-      // - <customer>/<year>/styles/analysis/<dataset>
-      // the dataset is always the name of the SLD file with the extension
-      if (type.toLowerCase() === 'styles') {
-        const styleType = folderStructure[typeIndex + 1]
-        const dataset = [styleType, folderStructure[typeIndex + 2]].join(`/`)
-        const dir = [BASEPATH, customer, year, type, dataset].join(`/`)
-
-        if (!folderStructure.join(`/`).includes(dir))
-          throw new Error(
-            `Invalid folder structure for ${origin}, expected ${dir}`
-          )
-
-        // skips the isFolder check if isUnlink is provided, since the file wont exist to be checked
-        if (!isUnlink) {
-          const isFolder = fs.lstatSync(path.join(dir)).isDirectory()
-
-          if (isFolder) {
-            console.warn(
-              `[check-structure] Invalid file structure for ${dir}, expected a file, but it's a folder`
-            )
-            return null
-          }
-        }
-
-        return {
-          customer,
-          year,
-          type: 'styles',
-          dataset,
-          dir: dir,
-        }
-      }
-
-      return null
-    } catch (error) {
-      console.error(`[check-structure] couldn't parse path: ${origin}`, error)
-      return null
+  if (isUnlink) {
+    const baseIndex = folderStructure.indexOf(BASEPATH)
+    if (baseIndex !== -1) {
+      folderStructure = folderStructure.slice(baseIndex)
     }
   }
-  // console.log(`[check-structure] structure:`, structure())
-  return structure() as DatasetStructure | null
+
+  const indexOfRaster = folderStructure.findIndex(
+    (e) => e.toLowerCase() === 'raster'
+  )
+  const indexOfPoints = folderStructure.findIndex(
+    (e) => e.toLowerCase() === 'points'
+  )
+  const indexOfAnalysis = folderStructure.findIndex(
+    (e) => e.toLowerCase() === 'analysis'
+  )
+  const indexOfStyles = folderStructure.findIndex(
+    (e) => e.toLowerCase() === 'styles'
+  )
+
+  let typeIndex = origin.includes('styles')
+    ? indexOfStyles
+    : [indexOfRaster, indexOfPoints, indexOfAnalysis].find((e) => e !== -1)
+
+  if (typeIndex === undefined || typeIndex === -1) {
+    return null
+  }
+
+  try {
+    if (folderStructure.length <= typeIndex + 1) return null
+
+    const customer = folderStructure[typeIndex - 2]
+    const year = folderStructure[typeIndex - 1]
+    const type = folderStructure[typeIndex] as DatasetStructure['type']
+
+    let dataset = folderStructure[typeIndex + 1]
+
+    if (type.toLowerCase() === 'raster') {
+      const dir = [BASEPATH, customer, year, type, dataset].join('/')
+
+      if (!folderStructure.join('/').startsWith(dir)) {
+        throw new Error(
+          `Invalid folder structure for ${origin}, expected ${dir}`
+        )
+      }
+
+      if (!isUnlink && fs.existsSync(dir) && !fs.lstatSync(dir).isDirectory()) {
+        console.warn(
+          `Invalid file structure for ${dir}, expected a folder, but it's a file`
+        )
+        return null
+      }
+
+      return { customer, year, type: 'raster', dataset, dir }
+    }
+
+    if (type.toLowerCase() === 'points' || type.toLowerCase() === 'analysis') {
+      if (!dataset.includes('.')) return null
+
+      const [datasetName, extension] = dataset.split('.')
+
+      if (
+        type.toLowerCase() === 'points' &&
+        !environments.pointsExtensions.includes(`.${extension}`)
+      )
+        return null
+      if (
+        type.toLowerCase() === 'analysis' &&
+        !environments.analysisExtensions.includes(`.${extension}`)
+      )
+        return null
+
+      const dir = [BASEPATH, customer, year, type, datasetName].join('/')
+
+      if (
+        !isUnlink &&
+        fs.existsSync(path.join(dir + `.${extension}`)) &&
+        fs.lstatSync(path.join(dir + `.${extension}`)).isDirectory()
+      ) {
+        console.warn(
+          `Invalid file structure for ${dir}, expected a file, but it's a folder`
+        )
+        return null
+      }
+
+      if (!folderStructure.join('/').startsWith(dir)) {
+        throw new Error(
+          `Invalid folder structure for ${origin}, expected ${dir}`
+        )
+      }
+
+      return { customer, year, type, dataset: datasetName, dir }
+    }
+
+    if (type.toLowerCase() === 'styles') {
+      const styleType = folderStructure[typeIndex + 1]
+      if (!styleType || folderStructure.length <= typeIndex + 2) return null
+
+      dataset = [styleType, folderStructure[typeIndex + 2]].join('/')
+
+      const dir = [BASEPATH, customer, year, type, dataset].join('/')
+
+      if (!folderStructure.join('/').startsWith(dir)) {
+        throw new Error(
+          `Invalid folder structure for ${origin}, expected ${dir}`
+        )
+      }
+
+      if (!isUnlink && fs.existsSync(dir) && fs.lstatSync(dir).isDirectory()) {
+        console.warn(
+          `[check-structure] Invalid file structure for ${dir}, expected a file, but it's a folder`
+        )
+        return null
+      }
+
+      return { customer, year, type: 'styles', dataset, dir }
+    }
+
+    return null
+  } catch (error) {
+    console.error(`[check-structure] couldn't parse path: ${origin}`, error)
+    return null
+  }
 }
