@@ -26,8 +26,18 @@ const EnvSchema = z.object({
     .string()
     .transform((val) => val === 'true')
     .default('false'),
-  FILE_ANALYSIS_WORKERS: z.number().default(1),
-  FILE_PROCESSING_WORKERS: z.number().default(1),
+  FILE_ANALYSIS_WORKERS: z
+    .string()
+    .refine((val) => !Number.isNaN(parseInt(val, 10)), {
+      message: 'Expected number, received a string',
+    })
+    .default('1'),
+  FILE_PROCESSING_WORKERS: z
+    .string()
+    .refine((val) => !Number.isNaN(parseInt(val, 10)), {
+      message: 'Expected number, received a string',
+    })
+    .default('1'),
 })
 
 // Parse and validate the environment variables
@@ -49,8 +59,8 @@ const environments = {
     .concat(parsedEnv.ANALYSIS_EXTENSIONS)
     .concat(parsedEnv.STYLES_EXTENSIONS),
   debug: parsedEnv.DEBUG,
-  fileanalysisWorkers: parsedEnv.FILE_ANALYSIS_WORKERS,
-  fileprocessingWorkers: parsedEnv.FILE_PROCESSING_WORKERS,
+  fileanalysisWorkers: parseInt(parsedEnv.FILE_ANALYSIS_WORKERS),
+  fileprocessingWorkers: parseInt(parsedEnv.FILE_PROCESSING_WORKERS),
 }
 
 export default environments
