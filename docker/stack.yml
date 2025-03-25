@@ -145,6 +145,8 @@ services:
       - C:/skyforest-uploader/filebrowser/filebrowser.db:/database.db
       - C:/skyforest-uploader/filebrowser/.filebrowser.json:/.filebrowser.json
       - D:/GEOSERVER_DATA:/srv
+    networks:
+      - skyforest-systems
 
 volumes:
   redis-insight:
