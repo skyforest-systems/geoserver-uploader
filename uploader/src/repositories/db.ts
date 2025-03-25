@@ -1,5 +1,6 @@
 import { ensureRedisClient, redisClient } from '../config/redis'
 import { FileOnRedis } from '../interfaces'
+import { FileSnapshot } from '../watchers/fileWatcher'
 
 export async function testRedis() {
   try {
@@ -280,6 +281,26 @@ export async function getAllFiles() {
     const keys = await getKeys(pattern)
 
     return keys
+  } catch (error) {
+    throw error
+  }
+}
+
+export async function saveSnapshot(snapshot: FileSnapshot) {
+  try {
+    await ensureRedisClient()
+    await redisClient.set('fileSnapshot', JSON.stringify(snapshot))
+  } catch (error) {
+    throw error
+  }
+}
+
+export async function getSnapshot(): Promise<FileSnapshot> {
+  try {
+    await ensureRedisClient()
+    const snapshot = await redisClient.get('fileSnapshot')
+    if (!snapshot) return {}
+    return JSON.parse(snapshot)
   } catch (error) {
     throw error
   }

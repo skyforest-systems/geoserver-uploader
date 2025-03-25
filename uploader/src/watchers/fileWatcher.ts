@@ -2,12 +2,17 @@ import { readdir, stat } from 'fs/promises'
 import path from 'path'
 import EventEmitter from 'events'
 import { Dirent } from 'fs'
-import { acquireLock, releaseLock } from '../repositories/db'
+import {
+  acquireLock,
+  getSnapshot,
+  releaseLock,
+  saveSnapshot,
+} from '../repositories/db'
 
 const DEFAULT_SCAN_INTERVAL = 60 * 1000 // 1 minute
 const LOCK_TTL_FOR_FILE_WATCHER = 60 * 60 // 1 hour
 
-interface FileSnapshot {
+export interface FileSnapshot {
   [filePath: string]: { mtimeMs: number }
 }
 
@@ -75,6 +80,11 @@ class FileWatcher extends EventEmitter {
 
     try {
       const currentSnapshot = await this.scanFiles(this.watchFolder)
+
+      if (Object.keys(this.previousSnapshot).length === 0) {
+        this.previousSnapshot = await getSnapshot()
+      }
+
       const events: { event: 'add' | 'change' | 'unlink'; path: string }[] = []
 
       // Detect added or changed files
@@ -97,6 +107,7 @@ class FileWatcher extends EventEmitter {
       }
 
       this.previousSnapshot = currentSnapshot
+      await saveSnapshot(this.previousSnapshot)
 
       for (const { event, path } of events) {
         this.emit(event, path)
