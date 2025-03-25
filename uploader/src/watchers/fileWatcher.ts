@@ -8,6 +8,7 @@ import {
   releaseLock,
   saveSnapshot,
 } from '../repositories/db'
+import environments from '../config/environments'
 
 const DEFAULT_SCAN_INTERVAL = 60 * 1000 // 1 minute
 const LOCK_TTL_FOR_FILE_WATCHER = 60 * 60 // 1 hour
@@ -39,6 +40,11 @@ class FileWatcher extends EventEmitter {
           await scan(fullPath)
         } else {
           try {
+            const extension = path.extname(fullPath).toLowerCase() // Gets ".txt", ".json", etc.
+
+            if (!environments.extensions.includes(extension)) {
+              return
+            }
             const stats = await stat(fullPath)
             snapshot[fullPath] = { mtimeMs: stats.mtimeMs }
           } catch (err) {
