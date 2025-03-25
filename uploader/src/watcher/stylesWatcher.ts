@@ -10,11 +10,7 @@ import { hashFile } from '../utils/hashFile'
 
 const LOCK_TTL_FOR_FILE_WATCHER = 60 * 60 // 1 hour
 
-export async function stylesWatcher(
-  event: 'add' | 'change' | 'unlink',
-  path: string,
-  shouldLog = false
-) {
+export async function stylesWatcher(path: string, shouldLog = false) {
   async function acquireStylesWatcherLock(maxRetries = 10): Promise<boolean> {
     let attempts = 0
     while (attempts < maxRetries) {
@@ -43,91 +39,68 @@ export async function stylesWatcher(
   try {
     shouldLog &&
       console.log(`[stylesWatcher] ${event} event detected for ${path}`)
-    if (event === 'add' || event === 'change') {
-      let now = new Date().getTime()
+    let now = new Date().getTime()
 
-      const structure = await checkStructure(path)
+    const structure = await checkStructure(path)
 
-      if (!structure) {
-        console.warn(`[stylesWatcher] invalid structure for ${path}`)
+    if (!structure) {
+      console.warn(`[stylesWatcher] invalid structure for ${path}`)
 
-        return
-      }
-
-      shouldLog &&
-        console.log(`[stylesWatcher] checking if file exists: ${path}`)
-      const exists = await checkIfFileAlreadyExists(path)
-
-      shouldLog && console.log(`[stylesWatcher] hashing file: ${path}`)
-      const hash = await hashFile(path)
-      if (!hash) {
-        console.error(
-          `[stylesWatcher] couldn't hash file: ${path} (that took ${
-            new Date().getTime() - now
-          }ms)`
-        )
-        return
-      }
-      shouldLog &&
-        console.log(
-          `[stylesWatcher] file ${path} hashed in ${
-            new Date().getTime() - now
-          }ms and ${
-            exists ? 'already exists' : "doesn't exist"
-          } at the database`
-        )
-
-      if (exists) {
-        shouldLog &&
-          console.log(
-            `[stylesWatcher] file already exists in database: ${path}`
-          )
-        const file = await getFile(path)
-
-        if (!file) return
-
-        if (hash === file.hash && file.status === 'done') {
-          shouldLog &&
-            console.log(
-              `[stylesWatcher] file already processed and no changes detected: ${path}`
-            )
-        } else {
-          shouldLog &&
-            console.log(
-              `[stylesWatcher] file's been updated - updating file status to queued: ${path}`
-            )
-          await saveFile({ ...file, hash, status: 'queued' })
-        }
-      } else {
-        const basepath = structure.dir
-
-        shouldLog && console.log(`[stylesWatcher] saving file: ${path}`)
-        await saveFile({
-          path,
-          basepath,
-          hash: hash,
-          status: 'queued',
-          ts: new Date().getTime(),
-          structure: structure,
-        })
-      }
+      return
     }
 
-    // if (event === 'unlink') {
-    //   const structure = await checkStructure(path, true)
+    shouldLog && console.log(`[stylesWatcher] checking if file exists: ${path}`)
+    const exists = await checkIfFileAlreadyExists(path)
 
-    //   if (!structure) {
-    //     shouldLog &&
-    //       console.log(
-    //         `[stylesWatcher] invalid structure for ${path}, file ignored`
-    //       )
-    //     return
-    //   }
-    //   const file = await getFile(path)
-    //   shouldLog &&
-    //     console.log(`[stylesWatcher] updating file status to removed: ${path}`)
-    //   await saveFile({ ...file!, status: 'removed' })
-    // }
+    shouldLog && console.log(`[stylesWatcher] hashing file: ${path}`)
+    const hash = await hashFile(path)
+    if (!hash) {
+      console.error(
+        `[stylesWatcher] couldn't hash file: ${path} (that took ${
+          new Date().getTime() - now
+        }ms)`
+      )
+      return
+    }
+    shouldLog &&
+      console.log(
+        `[stylesWatcher] file ${path} hashed in ${
+          new Date().getTime() - now
+        }ms and ${exists ? 'already exists' : "doesn't exist"} at the database`
+      )
+
+    if (exists) {
+      shouldLog &&
+        console.log(`[stylesWatcher] file already exists in database: ${path}`)
+      const file = await getFile(path)
+
+      if (!file) return
+
+      if (hash === file.hash && file.status === 'done') {
+        shouldLog &&
+          console.log(
+            `[stylesWatcher] file already processed and no changes detected: ${path}`
+          )
+      } else {
+        shouldLog &&
+          console.log(
+            `[stylesWatcher] file's been updated - updating file status to queued: ${path}`
+          )
+        await saveFile({ ...file, hash, status: 'queued' })
+      }
+    } else {
+      const basepath = structure.dir
+
+      shouldLog && console.log(`[stylesWatcher] saving file: ${path}`)
+      await saveFile({
+        path,
+        basepath,
+        hash: hash,
+        status: 'queued',
+        ts: new Date().getTime(),
+        structure: structure,
+      })
+    }
   } catch (error) {
     console.error(`[stylesWatcher] error:`, error)
   } finally {

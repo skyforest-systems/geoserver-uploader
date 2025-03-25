@@ -94,11 +94,11 @@ export function checkStructure(
         const extension = `.` + folderStructure[typeIndex + 1].split('.')[1]
 
         if (!environments.pointsExtensions.includes(extension)) {
-          console.warn(
-            `[check-structure] Invalid file extension for ${origin}, expected one of ${environments.pointsExtensions.join(
-              ', '
-            )}`
-          )
+          // console.warn(
+          //   `[check-structure] Invalid file extension for ${origin}, expected one of ${environments.pointsExtensions.join(
+          //     ', '
+          //   )}`
+          // )
           return null
         }
 
@@ -139,11 +139,11 @@ export function checkStructure(
         const extension = `.` + folderStructure[typeIndex + 1].split('.')[1]
 
         if (!environments.analysisExtensions.includes(extension)) {
-          console.warn(
-            `[check-structure] Invalid file extension for ${origin}, expected one of ${environments.analysisExtensions.join(
-              ', '
-            )}`
-          )
+          // console.warn(
+          //   `[check-structure] Invalid file extension for ${origin}, expected one of ${environments.analysisExtensions.join(
+          //     ', '
+          //   )}`
+          // )
           return null
         }
 

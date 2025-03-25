@@ -7,7 +7,6 @@
     "axios": "^1.7.7",
     "axios-curlirize": "^2.0.0",
     "child_process": "^1.0.2",
-    "chokidar": "3.1.1",
     "cluster-key-slot": "^1.1.2",
     "combined-stream": "^1.0.8",
     "delayed-stream": "^1.0.0",

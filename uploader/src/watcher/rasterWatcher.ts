@@ -10,11 +10,7 @@ import { hashFile } from '../utils/hashFile'
 
 const LOCK_TTL_FOR_FILE_WATCHER = 60 * 60 // 1 hour
 
-export async function rasterWatcher(
-  event: 'add' | 'change' | 'unlink',
-  path: string,
-  shouldLog = false
-) {
+export async function rasterWatcher(path: string, shouldLog = false) {
   async function acquirerasterWatcherLock(maxRetries = 10): Promise<boolean> {
     let attempts = 0
     while (attempts < maxRetries) {
@@ -43,87 +39,66 @@ export async function rasterWatcher(
   try {
     shouldLog &&
       console.log(`[rasterWatcher] ${event} event detected for ${path}`)
-    if (event === 'add' || event === 'change') {
-      let now = new Date().getTime()
-      const structure = await checkStructure(path)
+    let now = new Date().getTime()
+    const structure = await checkStructure(path)
 
-      if (!structure) {
-        console.warn(`[rasterWatcher] invalid structure for ${path}`)
-        return
-      }
-
-      shouldLog &&
-        console.log(`[rasterWatcher] checking if file exists: ${path}`)
-      const exists = await checkIfFileAlreadyExists(path)
-
-      shouldLog && console.log(`[rasterWatcher] hashing file: ${path}`)
-      const hash = await hashFile(path)
-      if (!hash) {
-        console.error(
-          `[rasterWatcher] couldn't hash file: ${path} (that took ${
-            new Date().getTime() - now
-          }ms)`
-        )
-        return
-      }
-      shouldLog &&
-        console.log(
-          `[rasterWatcher] file ${path} hashed in ${
-            new Date().getTime() - now
-          }ms and ${
-            exists ? 'already exists' : "doesn't exist"
-          } at the database`
-        )
-
-      if (exists) {
-        shouldLog &&
-          console.log(
-            `[rasterWatcher] file already exists in database: ${path}`
-          )
-        const file = await getFile(path)
-
-        if (!file) return
-
-        if (hash === file.hash && file.status === 'done') {
-          shouldLog &&
-            console.log(
-              `[rasterWatcher] file already processed and no changes detected: ${path}`
-            )
-        } else {
-          shouldLog &&
-            console.log(
-              `[rasterWatcher] file's been updated - updating file status to queued: ${path}`
-            )
-          await saveFile({ ...file, hash, status: 'queued' })
-        }
-      } else {
-        const basepath = structure.dir
-
-        shouldLog && console.log(`[rasterWatcher] saving file: ${path}`)
-        await saveFile({
-          path,
-          basepath,
-          hash: hash,
-          status: 'queued',
-          ts: new Date().getTime(),
-          structure: structure,
-        })
-      }
+    if (!structure) {
+      console.warn(`[rasterWatcher] invalid structure for ${path}`)
+      return
     }
 
-    // if (event === 'unlink') {
-    //   const structure = await checkStructure(path, true)
+    shouldLog && console.log(`[rasterWatcher] checking if file exists: ${path}`)
+    const exists = await checkIfFileAlreadyExists(path)
 
-    //   if (!structure) {
-    //     shouldLog &&
-    //       console.log(`[rasterWatcher] invalid structure for ${path}`)
-    //     return
-    //   }
-    //   const file = await getFile(path)
-    //   shouldLog &&
-    //     console.log(`[rasterWatcher] updating file status to removed: ${path}`)
-    //   await saveFile({ ...file!, status: 'removed' })
-    // }
+    shouldLog && console.log(`[rasterWatcher] hashing file: ${path}`)
+    const hash = await hashFile(path)
+    if (!hash) {
+      console.error(
+        `[rasterWatcher] couldn't hash file: ${path} (that took ${
+          new Date().getTime() - now
+        }ms)`
+      )
+      return
+    }
+    shouldLog &&
+      console.log(
+        `[rasterWatcher] file ${path} hashed in ${
+          new Date().getTime() - now
+        }ms and ${exists ? 'already exists' : "doesn't exist"} at the database`
+      )
+
+    if (exists) {
+      shouldLog &&
+        console.log(`[rasterWatcher] file already exists in database: ${path}`)
+      const file = await getFile(path)
+
+      if (!file) return
+
+      if (hash === file.hash && file.status === 'done') {
+        shouldLog &&
+          console.log(
+            `[rasterWatcher] file already processed and no changes detected: ${path}`
+          )
+      } else {
+        shouldLog &&
+          console.log(
+            `[rasterWatcher] file's been updated - updating file status to queued: ${path}`
+          )
+        await saveFile({ ...file, hash, status: 'queued' })
+      }
+    } else {
+      const basepath = structure.dir
+
+      shouldLog && console.log(`[rasterWatcher] saving file: ${path}`)
+      await saveFile({
+        path,
+        basepath,
+        hash: hash,
+        status: 'queued',
+        ts: new Date().getTime(),
+        structure: structure,
+      })
+    }
   } catch (error) {
     console.error(`[rasterWatcher] error:`, error)
   } finally {

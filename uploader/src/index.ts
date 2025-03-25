@@ -1,5 +1,4 @@
 import express, { Express, Request, Response } from 'express'
-import chokidar from 'chokidar'
 import environments from './environments'
 import { rasterWatcher } from './watcher/rasterWatcher'
 import { queueWatcher } from './watcher/queueWatcher'
@@ -10,14 +9,29 @@ import getLocks, {
   releaseAllLocks,
   removeFilesByBasepath,
   revertProcessingStatusToQueued,
+  testRedis,
 } from './repositories/db'
 import removeWatcher from './watcher/removeWatcher'
 import { pointsWatcher } from './watcher/pointsWatcher'
 import { stylesWatcher } from './watcher/stylesWatcher'
 import { analysisWatcher } from './watcher/analysisWatcher'
+import FileWatcher from './watcher/fileWatcher'
 
 const app: Express = express()
 const port = process.env.PORT || 2000
+
+const FILE_WATCHER_INTERVAL = parseInt(
+  String(process.env.FILE_WATCHER_INTERVAL || 30 * 1000)
+) // 30 seconds
+const QUEUE_WATCHER_INTERVAL = parseInt(
+  String(process.env.QUEUE_WATCHER_INTERVAL || 5 * 1000)
+) // 5 seconds
+const GEOSERVER_WATCHER_INTERVAL = parseInt(
+  String(process.env.GEOSERVER_WATCHER_INTERVAL || 10 * 60 * 1000)
+) // 10 minutes
+const REMOVE_WATCHER_INTERVAL = parseInt(
+  String(process.env.REMOVE_WATCHER_INTERVAL || 10 * 1000)
+) // 10 seconds
 
 app.get('/locks', async (req: Request, res: Response) => {
   res.send(await getLocks())
@@ -54,6 +68,15 @@ app.listen(port, async () => {
   let processedFiles = 0
   let startTime = new Date().getTime()
 
+  console.log(`[control] testing redis connection...`)
+  await testRedis()
+  console.log(`[control] redis connection is working`)
+
+  console.log(
+    `[control] waiting 10 seconds before starting the file watcher...`
+  )
+  await new Promise((resolve) => setTimeout(resolve, 10000))
+
   console.log(`[control] found ${totalFiles} files in the folder.`)
 
   if (totalFiles > 0) {
@@ -62,18 +85,28 @@ app.listen(port, async () => {
     console.log('[control] no files found in the folder.')
   }
 
-  // Start file watcher
-  const watcher = chokidar.watch(folderPath, {
-    ignoreInitial: false,
-    persistent: true,
-    usePolling: true
-  })
+  const watcher = new FileWatcher(folderPath, FILE_WATCHER_INTERVAL)
+  watcher.start()
 
-  let isChokidarReady = false
+  let isFileWatcherReady = false
+
+  const watcherHandler = async (path: string) => {
+    // Skip files with '_output' in the name
+    if (path.includes('_output')) return
+    // Only consider files with the desired extensions
+    if (!environments.extensions) return
+    if (path.includes('.DS_Store')) return
+    if (path.includes('raster')) await rasterWatcher(path, isFileWatcherReady)
+    if (path.includes('points') && !path.includes('styles'))
+      await pointsWatcher(path, isFileWatcherReady)
+    if (path.includes('analysis') && !path.includes('styles'))
+      await analysisWatcher(path, isFileWatcherReady)
+    if (path.includes('styles')) await stylesWatcher(path, isFileWatcherReady)
+  }
 
   watcher
     .on('add', () => {
-      if (!isChokidarReady) {
+      if (!isFileWatcherReady) {
         processedFiles++
         const elapsedTime = (Date.now() - (startTime || 0)) / 1000 // in seconds
         const eta = processedFiles
@@ -95,49 +128,23 @@ app.listen(port, async () => {
           (Date.now() - startTime) / 1000
         }s, file watcher is ready for new changes.`
       )
-      isChokidarReady = true
+      isFileWatcherReady = true
     })
-    .on('all', async (event, path) => {
-      // rasterWatcher should be triggered only by add, change, or deletion events
-      if (!(event === 'add' || event === 'change' || event === 'unlink')) return
-
-      // Skip files with '_output' in the name
-      if (path.includes('_output')) return
-
-      // Only consider files with the desired extensions
-      const fileExtension = '.' + path.split('.').pop()
-      if (!environments.extensions) return
-
-      if (path.includes('.DS_Store')) return
-
-      if (path.includes('raster'))
-        await rasterWatcher(event, path, isChokidarReady)
-
-      if (path.includes('points') && !path.includes('styles'))
-        await pointsWatcher(event, path, isChokidarReady)
-
-      if (path.includes('analysis') && !path.includes('styles'))
-        await analysisWatcher(event, path, isChokidarReady)
-
-      if (path.includes('styles'))
-        await stylesWatcher(event, path, isChokidarReady)
-    })
+    .on('add', watcherHandler)
+    .on('change', watcherHandler)
 
   setInterval(async () => {
     let israsterWatcherReady = !(await checkRasterWatcherLock())
-    israsterWatcherReady && isChokidarReady && queueWatcher()
-  }, 5 * 1000)
-
-  setInterval(
-    async () => {
-      let israsterWatcherReady = !(await checkRasterWatcherLock())
-      israsterWatcherReady && isChokidarReady && geoserverWatcher()
-    },
-    10 * 60 * 1000
-  )
+    israsterWatcherReady && isFileWatcherReady && queueWatcher()
+  }, QUEUE_WATCHER_INTERVAL)
 
   setInterval(async () => {
     let israsterWatcherReady = !(await checkRasterWatcherLock())
-    israsterWatcherReady && isChokidarReady && removeWatcher()
-  }, 10 * 1000)
+    israsterWatcherReady && isFileWatcherReady && geoserverWatcher()
+  }, GEOSERVER_WATCHER_INTERVAL)
+
+  setInterval(async () => {
+    let israsterWatcherReady = !(await checkRasterWatcherLock())
+    israsterWatcherReady && isFileWatcherReady && removeWatcher()
+  }, REMOVE_WATCHER_INTERVAL)
 })

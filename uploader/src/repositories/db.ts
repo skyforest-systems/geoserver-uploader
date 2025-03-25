@@ -21,6 +21,15 @@ async function ensureRedisClient() {
   }
 }
 
+export async function testRedis() {
+  try {
+    await ensureRedisClient()
+    await redisClient.ping()
+  } catch (error) {
+    throw error
+  }
+}
+
 export async function checkRasterWatcherLock() {
   try {
     await ensureRedisClient()
