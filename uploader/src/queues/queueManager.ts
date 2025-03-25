@@ -27,6 +27,7 @@ export async function enqueueForFileProcessing(structure: DatasetStructure) {
         id: structure.dir,
       },
       delay: 1000 * 60 * 5, // Wait 5 minutes before processing the file to ensure the analysis of the whole dataset is done
+      attempts: 3,
     }
   )
 }
