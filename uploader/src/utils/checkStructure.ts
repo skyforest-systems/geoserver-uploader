@@ -10,6 +10,8 @@ export function checkStructure(
   const BASEPATH = 'files'
   let folderStructure = origin.replace(/\\/g, '/').split('/')
 
+  origin = origin.toLowerCase()
+
   if (isUnlink) {
     const baseIndex = folderStructure.indexOf(BASEPATH)
     if (baseIndex !== -1) {
