@@ -32,6 +32,7 @@ const GEOSERVER_WATCHER_INTERVAL = parseInt(
 const REMOVE_WATCHER_INTERVAL = parseInt(
   String(process.env.REMOVE_WATCHER_INTERVAL || 10 * 1000)
 ) // 10 seconds
+const DEBUG = process.env.DEBUG === 'true'
 
 app.get('/locks', async (req: Request, res: Response) => {
   res.send(await getLocks())
@@ -96,12 +97,12 @@ app.listen(port, async () => {
     // Only consider files with the desired extensions
     if (!environments.extensions) return
     if (path.includes('.DS_Store')) return
-    if (path.includes('raster')) await rasterWatcher(path, isFileWatcherReady)
+    if (path.includes('raster')) await rasterWatcher(path, DEBUG)
     if (path.includes('points') && !path.includes('styles'))
-      await pointsWatcher(path, isFileWatcherReady)
+      await pointsWatcher(path, DEBUG)
     if (path.includes('analysis') && !path.includes('styles'))
-      await analysisWatcher(path, isFileWatcherReady)
-    if (path.includes('styles')) await stylesWatcher(path, isFileWatcherReady)
+      await analysisWatcher(path, DEBUG)
+    if (path.includes('styles')) await stylesWatcher(path, DEBUG)
   }
 
   watcher
