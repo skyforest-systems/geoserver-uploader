@@ -1,4 +1,4 @@
-import geoserver from '../repositories/geoserver'
+import geoserver from '../config/geoserver'
 
 /**
  * Remove a layer group in GeoServer if it exists.

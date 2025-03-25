@@ -1,4 +1,4 @@
-import geoserver from '../repositories/geoserver'
+import geoserver from '../config/geoserver'
 import { DatasetStructure } from '../interfaces'
 import { createStyle } from './createStyle'
 

@@ -1,4 +1,4 @@
-import geoserver from '../repositories/geoserver'
+import geoserver from '../config/geoserver'
 
 export async function removeLayer(workspace: string, layer: string) {
   workspace = workspace.toLowerCase().replace(/ /g, '_')

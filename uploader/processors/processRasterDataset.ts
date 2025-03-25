@@ -1,11 +1,11 @@
-import { DatasetStructure } from '../interfaces'
-import { acquireLock, releaseLock } from '../repositories/db'
-import { createLayer } from './createLayer'
-import { createLayerGroupFromWorkspace } from './createLayerGroupFromWorkspace'
-import { createStore } from './createStore'
-import { createWorkspace } from './createWorkspace'
-import getGeoserverNames from './getGeoserverNames'
-import processRaster from './processRaster'
+import { DatasetStructure } from '../src/interfaces'
+import { createLayer } from '../src/services/createLayer'
+import { createLayerGroupFromWorkspace } from '../src/services/createLayerGroupFromWorkspace'
+import { createStore } from '../src/services/createStore'
+import { createWorkspace } from '../src/services/createWorkspace'
+import { acquireLock, releaseLock } from '../src/repositories/db'
+import getGeoserverNames from '../src/services/getGeoserverNames'
+import processRaster from '../src/services/processRaster'
 
 export default async function processRasterDataset(
   structure: DatasetStructure

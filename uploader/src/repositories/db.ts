@@ -1,25 +1,5 @@
-import { createClient } from 'redis'
-import { DatasetQueueItem, DatasetStructure, FileOnRedis } from '../interfaces'
-import environments from '../environments'
-
-// Create a single Redis client instance and reuse it
-const redisClient = createClient({
-  url: environments.redisUrl,
-})
-
-redisClient.on('error', (err) => console.log('Redis Client Error', err))
-
-async function initializeRedisClient() {
-  if (!redisClient.isOpen) {
-    await redisClient.connect()
-  }
-}
-
-async function ensureRedisClient() {
-  if (!redisClient.isOpen) {
-    await initializeRedisClient()
-  }
-}
+import { ensureRedisClient, redisClient } from '../config/redis'
+import { FileOnRedis } from '../interfaces'
 
 export async function testRedis() {
   try {

@@ -1,4 +1,4 @@
-import geoserver from '../repositories/geoserver'
+import geoserver from '../config/geoserver'
 
 /**
  * Create a new workspace in GeoServer if it doesn't already exist.
