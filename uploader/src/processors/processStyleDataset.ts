@@ -50,7 +50,7 @@ export default async function processStyleDataset(structure: DatasetStructure) {
     )
     console.log(`[processStyleDataset] created style: ${createdStyle}`)
 
-    if (structure.dataset.includes('points')) {
+    if (structure.dataset.toLowerCase().includes('points')) {
       const layers = await getLayersFromWorkspace(workspaceName)
       const pointLayers = layers.filter((layer) =>
         layer.name.includes('_points')
@@ -75,7 +75,7 @@ export default async function processStyleDataset(structure: DatasetStructure) {
       )
 
       return layerGroup
-    } else if (structure.dataset.includes('analysis')) {
+    } else if (structure.dataset.toLowerCase().includes('analysis')) {
       const layers = await getLayersFromWorkspace(workspaceName)
       const analysisLayers = layers.filter((layer) =>
         layer.name.includes('_analysis')
