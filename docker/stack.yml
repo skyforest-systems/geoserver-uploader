@@ -42,6 +42,7 @@ services:
       - RASTER_EXTENSIONS=.jpg,.jpeg
       - POINTS_EXTENSIONS=.geojson,.shp,.kml,.sld
       - ANALYSIS_EXTENSIONS=.tif,.geotiff,.tiff
+      - DEBUG=true
     restart: always
     volumes:
       - D:/GEOSERVER_DATA:/app/output
