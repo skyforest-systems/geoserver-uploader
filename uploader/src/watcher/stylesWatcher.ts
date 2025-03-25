@@ -37,8 +37,7 @@ export async function stylesWatcher(path: string, shouldLog = false) {
   }
 
   try {
-    shouldLog &&
-      console.log(`[stylesWatcher] ${event} event detected for ${path}`)
+    shouldLog && console.log(`[stylesWatcher] event detected for ${path}`)
     let now = new Date().getTime()
 
     const structure = await checkStructure(path)

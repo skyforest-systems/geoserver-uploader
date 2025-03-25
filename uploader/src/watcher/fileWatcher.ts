@@ -37,7 +37,7 @@ class FileWatcher extends EventEmitter {
             const stats = await stat(fullPath)
             snapshot[fullPath] = { mtimeMs: stats.mtimeMs }
           } catch (err) {
-            console.error(`[fileWatcher] error reading file: ${fullPath}`, err)
+            console.error(`[fileWatcher] couldn't read file: ${fullPath}`)
           }
         }
       }

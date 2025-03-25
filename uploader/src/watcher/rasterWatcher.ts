@@ -37,8 +37,7 @@ export async function rasterWatcher(path: string, shouldLog = false) {
   }
 
   try {
-    shouldLog &&
-      console.log(`[rasterWatcher] ${event} event detected for ${path}`)
+    shouldLog && console.log(`[rasterWatcher] event detected for ${path}`)
     let now = new Date().getTime()
     const structure = await checkStructure(path)
 

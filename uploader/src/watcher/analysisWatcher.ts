@@ -37,8 +37,7 @@ export async function analysisWatcher(path: string, shouldLog = false) {
   }
 
   try {
-    shouldLog &&
-      console.log(`[analysisWatcher] ${event} event detected for ${path}`)
+    shouldLog && console.log(`[analysisWatcher] event detected for ${path}`)
     let now = new Date().getTime()
 
     const structure = await checkStructure(path)

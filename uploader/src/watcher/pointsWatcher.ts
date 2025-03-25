@@ -37,8 +37,7 @@ export async function pointsWatcher(path: string, shouldLog = false) {
   }
 
   try {
-    shouldLog &&
-      console.log(`[pointsWatcher] ${event} event detected for ${path}`)
+    shouldLog && console.log(`[pointsWatcher] event detected for ${path}`)
     let now = new Date().getTime()
 
     const structure = await checkStructure(path)
