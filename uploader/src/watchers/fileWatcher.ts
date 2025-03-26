@@ -11,7 +11,7 @@ import {
 import environments from '../config/environments'
 
 const DEFAULT_SCAN_INTERVAL = 60 * 1000 // 1 minute
-const LOCK_TTL_FOR_FILE_WATCHER = 60 * 60 // 1 hour
+const LOCK_TTL_FOR_FILE_WATCHER = 60 // 1 minute
 
 export interface FileSnapshot {
   [filePath: string]: { mtimeMs: number }
@@ -43,7 +43,7 @@ class FileWatcher extends EventEmitter {
             const extension = path.extname(fullPath).toLowerCase() // Gets ".txt", ".json", etc.
 
             if (!environments.extensions.includes(extension)) {
-              return
+              continue
             }
             const stats = await stat(fullPath)
             snapshot[fullPath] = { mtimeMs: stats.mtimeMs }
