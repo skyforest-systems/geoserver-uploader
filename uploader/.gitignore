@@ -2,6 +2,7 @@
 /node_modules
 /files
 /files_copy
+/files_old
 /geoserver
 /dist
 /portainer
