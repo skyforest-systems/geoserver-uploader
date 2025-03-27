@@ -15,4 +15,4 @@ RUN npm install typescript -g
 
 RUN tsc
 
-CMD ["node", "dist/src/index.js"]
+CMD ["node", "dist/index.js"]
