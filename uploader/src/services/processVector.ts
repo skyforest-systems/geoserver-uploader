@@ -60,7 +60,7 @@ export default async function processVector(structure: DatasetStructure) {
       `[processVectorService] Converting to Shapefile: ${outputShapefilePath}`
     )
     await execPromise(
-      `ogr2ogr -f "ESRI Shapefile" "${outputShapefilePath}" "${inputShapefilePath}" -nlt POINT -overwrite`
+      `ogr2ogr -t_srs EPSG:4326 -f "ESRI Shapefile" "${outputShapefilePath}" "${inputShapefilePath}" -nlt POINT -overwrite`
     )
 
     console.log(
