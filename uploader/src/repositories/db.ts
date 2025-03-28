@@ -112,7 +112,8 @@ export async function getFilesByPattern(
     const keys = await getAllFiles()
 
     const result: FileOnRedis[] = []
-    for (const key of keys) {
+    for (let key of keys) {
+      key = key.toLowerCase()
       if (!key.includes(pattern)) continue
       const keyType = await redisClient.type(key)
 
