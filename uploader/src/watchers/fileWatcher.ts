@@ -78,9 +78,7 @@ class FileWatcher extends EventEmitter {
     const lock = await acquireFileWatcherLock()
 
     if (!lock) {
-      console.error(
-        `[fileWatcher] could no aquire lock for ${path} after 10 attempts`
-      )
+      console.error(`[fileWatcher] could no aquire lock after 10 attempts`)
       return
     }
 

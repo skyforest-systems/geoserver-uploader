@@ -11,49 +11,55 @@ export async function fileProcessingProcessor(structure: DatasetStructure) {
 
     const now = Date.now()
 
-    if (structure.type === 'raster') {
+    const type = structure.type.toLowerCase()
+
+    if (type === 'raster') {
       console.log(
-        `[fileProcessingProcessor] processing ${structure.type}: ${structure.dir}`
+        `[fileProcessingProcessor] processing ${type}: ${structure.dir}`
       )
       await changeFileStatusByBasepath(structure.dir, 'processing')
       await processRasterDataset(structure)
       console.log(
         `[fileProcessingProcessor] finished processing ${
-          structure.type
+          type
         }: ${structure.dir} in ${Date.now() - now}ms`
       )
       await changeFileStatusByBasepath(structure.dir, 'done')
-    } else if (structure.type === 'points') {
+    } else if (type === 'points') {
       console.log(
-        `[fileProcessingProcessor] processing ${structure.type}: ${structure.dir}`
+        `[fileProcessingProcessor] processing ${type}: ${structure.dir}`
       )
       await changeFileStatusByBasepath(structure.dir, 'processing')
       await processVectorDataset(structure)
       console.log(
         `[fileProcessingProcessor] finished processing ${
-          structure.type
+          type
         }: ${structure.dir} in ${Date.now() - now}ms`
       )
       await changeFileStatusByBasepath(structure.dir, 'done')
-    } else if (structure.type === 'analysis') {
+    } else if (type === 'analysis') {
       console.log(
-        `[fileProcessingProcessor] processing ${structure.type}: ${structure.dir}`
+        `[fileProcessingProcessor] processing ${type}: ${structure.dir}`
       )
       await changeFileStatusByBasepath(structure.dir, 'processing')
       await processAnalysisDataset(structure)
       await changeFileStatusByBasepath(structure.dir, 'done')
-    } else if (structure.type === 'styles') {
+    } else if (type === 'styles') {
       console.log(
-        `[fileProcessingProcessor] processing ${structure.type}: ${structure.dir}`
+        `[fileProcessingProcessor] processing ${type}: ${structure.dir}`
       )
       await changeFileStatusByBasepath(structure.dir, 'processing')
       await processStyleDataset(structure)
       console.log(
         `[fileProcessingProcessor] finished processing ${
-          structure.type
+          type
         }: ${structure.dir} in ${Date.now() - now}ms`
       )
       await changeFileStatusByBasepath(structure.dir, 'done')
+    } else {
+      console.error([
+        `[fileProcessingProcessor] could not identify type of dataset: ${structure.type} (lower cased to ${type})`,
+      ])
     }
   } catch (error) {
     throw error
