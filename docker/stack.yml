@@ -161,6 +161,8 @@ services:
       - 8082:8080
     environment:
       DOZZLE_ENABLE_ACTIONS: true
+      DOZZLE_BASE: /dozzle
+      
 volumes:
   redis-insight:
   skyport:
