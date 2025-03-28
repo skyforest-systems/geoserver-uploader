@@ -8,16 +8,7 @@ export function checkStructure(
   isUnlink?: boolean
 ): DatasetStructure | null {
   const BASEPATH = 'files'
-  let folderStructure = origin.replace(/\\/g, '/').split('/')
-
-  origin = origin.toLowerCase()
-
-  if (isUnlink) {
-    const baseIndex = folderStructure.indexOf(BASEPATH)
-    if (baseIndex !== -1) {
-      folderStructure = folderStructure.slice(baseIndex)
-    }
-  }
+  const folderStructure = origin.replace(/\\/g, '/').split('/')
 
   const indexOfRaster = folderStructure.findIndex(
     (e) => e.toLowerCase() === 'raster'
@@ -58,7 +49,7 @@ export function checkStructure(
         )
       }
 
-      if (!isUnlink && fs.existsSync(dir) && !fs.lstatSync(dir).isDirectory()) {
+      if (fs.existsSync(dir) && !fs.lstatSync(dir).isDirectory()) {
         console.warn(
           `Invalid file structure for ${dir}, expected a folder, but it's a file`
         )
@@ -87,7 +78,6 @@ export function checkStructure(
       const dir = [BASEPATH, customer, year, type, datasetName].join('/')
 
       if (
-        !isUnlink &&
         fs.existsSync(path.join(dir + `.${extension}`)) &&
         fs.lstatSync(path.join(dir + `.${extension}`)).isDirectory()
       ) {
@@ -120,7 +110,7 @@ export function checkStructure(
         )
       }
 
-      if (!isUnlink && fs.existsSync(dir) && fs.lstatSync(dir).isDirectory()) {
+      if (fs.existsSync(dir) && fs.lstatSync(dir).isDirectory()) {
         console.warn(
           `[check-structure] Invalid file structure for ${dir}, expected a file, but it's a folder`
         )
