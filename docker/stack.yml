@@ -162,7 +162,9 @@ services:
     environment:
       DOZZLE_ENABLE_ACTIONS: true
       DOZZLE_BASE: /dozzle
-      
+    networks:
+      - skyforest-systems
+
 volumes:
   redis-insight:
   skyport:
