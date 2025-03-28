@@ -4,7 +4,7 @@ export default function getGeoserverNames(structure: DatasetStructure) {
   const workspaceName = `${structure.customer}_${structure.year}`
   const layerGroupName = `${structure.customer}_${structure.year}`
 
-  if (structure.type === 'points') {
+  if (structure.type.toLowerCase() === 'points') {
     return {
       workspaceName,
       layerGroupName: `${structure.customer}_${structure.year}_points`,
@@ -13,7 +13,7 @@ export default function getGeoserverNames(structure: DatasetStructure) {
       nativeName: `${structure.dataset}_output`,
       styleName: `${structure.customer}_${structure.year}_${structure.dataset}_points_default`,
     }
-  } else if (structure.type === 'analysis') {
+  } else if (structure.type.toLowerCase() === 'analysis') {
     return {
       workspaceName,
       layerGroupName: `${structure.customer}_${structure.year}_analysis`,
@@ -22,7 +22,7 @@ export default function getGeoserverNames(structure: DatasetStructure) {
       nativeName: ``,
       styleName: `${structure.customer}_${structure.year}_${structure.dataset}_analysis_default`,
     }
-  } else if (structure.type === 'styles') {
+  } else if (structure.type.toLowerCase() === 'styles') {
     return {
       workspaceName,
       layerGroupName:
@@ -39,7 +39,7 @@ export default function getGeoserverNames(structure: DatasetStructure) {
           ''
         ),
     }
-  } else if (structure.type === 'raster') {
+  } else if (structure.type.toLowerCase() === 'raster') {
     return {
       workspaceName,
       layerGroupName,
