@@ -165,6 +165,23 @@ services:
     networks:
       - skyforest-systems
 
+  minio:
+    image: minio/minio
+    container_name: minio
+    hostname: minio
+    ports:
+      - "8083:9001"
+      - "8084:9000"
+    restart: always
+    volumes:
+      - D:/MINIO_DATA:/data
+    environment:
+      MINIO_ROOT_USER: topocart
+      MINIO_ROOT_PASSWORD: 4wveMNLV83
+    command: server --console-address ":9001" /data
+    networks:
+      - skyforest-systems
+
 volumes:
   redis-insight:
   skyport:
