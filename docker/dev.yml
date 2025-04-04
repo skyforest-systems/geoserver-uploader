@@ -29,7 +29,7 @@ services:
     restart: always
     volumes:
       - ../uploader/output:/app/output
-      - skyforest:/app/files
+      - ../uploader/files:/app/files
     networks:
       - skyforest-systems
 
@@ -72,7 +72,7 @@ services:
       - 8080:8080
     volumes:
       - ../geoserver:/opt/geoserver_data
-      - skyforest:/files 
+      - ../uploader/files:/files 
       - ../uploader/output:/output 
     networks:
       - skyforest-systems
@@ -108,8 +108,8 @@ services:
 
 volumes:
   redis-insight:
-  skyforest:
-    external: true
+  # skyforest:
+  #   external: true
 
 networks:
   skyforest-systems:
